@@ -12,3 +12,31 @@ This project is designed to streamline the entire process, making it accessible 
 - **Charting:** Visualize your trading strategies and market data with integrated charting capabilities.
 - **Telegram Bot Integration:** Receive real-time notifications and interact with your trading bot via Telegram messenger.
 - **Extensibility:** Easily extend the library with your custom indicators and strategies to tailor the bot to your specific needs.
+
+# Developers
+
+## Installation and Setup
+
+You have to set up the virtual python environment.
+Use the commands below in the project root folder.
+
+```sh
+python -m venv venv
+
+# On Linux
+source venv/bin/activate
+
+# On Windows
+# venv\Scripts\activate
+
+pip install -r requirements.txt
+pip install -e .
+```
+
+## When finished
+
+Use the following command to exit the virtual environment.
+
+```sh
+deactivate
+```
