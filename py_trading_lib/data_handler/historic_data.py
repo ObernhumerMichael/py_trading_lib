@@ -3,13 +3,13 @@ import os
 import pandas as pd
 
 
-class HistoricData:
+class LocalKlines:
     def get_from_csv(self, path: str) -> pd.DataFrame:
         self._file_sanity_checks(path)
 
         data = self._try_read_data(path)
 
-        self._check_columns(data)
+        KlineChecks().check_columns(data)
 
         return data
 
@@ -34,10 +34,19 @@ class HistoricData:
     def _read_data(self, path: str):
         return pd.read_csv(path)
 
-    def _check_columns(self, data: pd.DataFrame):
-        expected_columns = ["TIME", "OPEN", "HIGH", "LOW", "CLOSE", "VOLUME"]
 
-        if expected_columns != data.columns.tolist():
+class KlineChecks:
+    def check_columns(self, klines: pd.DataFrame):
+        expected_columns = ["TIME", "OPEN", "HIGH", "LOW", "CLOSE", "VOLUME"]
+        columns = klines.columns.tolist()
+
+        if expected_columns != columns:
+            raise ValueError(f"The following columns are needed: {expected_columns}")
+
+    def check_has_min_len(self, klines: pd.DataFrame, min_len: int):
+        len_klines = len(klines)
+
+        if len_klines < min_len:
             raise ValueError(
-                f"The file does not exist in the following format: {expected_columns}"
+                f"The klines have a length of {len_klines} and a min lenght of {min_len} is needed."
             )
