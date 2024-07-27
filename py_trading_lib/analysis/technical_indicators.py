@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Any
 
 import pandas as pd
 import pandas_ta as ta
@@ -12,17 +13,42 @@ class ITechnicalIndicator(ABC):
         pass
 
     @abstractmethod
-    def calculate(self, klines: pd.DataFrame) -> pd.DataFrame:
+    def get_min_len(self) -> int:
         pass
 
     @abstractmethod
-    def get_min_len(self) -> int:
+    def _calculate_indicator(self, klines: pd.DataFrame) -> Any:
         pass
+
+    def calculate(self, klines: pd.DataFrame) -> pd.DataFrame:
+        self._sanity_checks(klines)
+        indicator = self._try_calculate(klines)
+        return indicator
 
     def _sanity_checks(self, klines: pd.DataFrame):
         min_len = self.get_min_len()
         KlineChecks().check_columns(klines)
         KlineChecks().check_has_min_len(klines, min_len)
+
+    def _try_calculate(self, klines: pd.DataFrame) -> pd.DataFrame:
+        try:
+            indicator = self._calculate_indicator(klines)
+        except Exception as e:
+            raise e
+
+        indicator = self._convert_to_dataframe(indicator)
+
+        return indicator
+
+    def _convert_to_dataframe(self, indicator: Any) -> pd.DataFrame:
+        if isinstance(indicator, pd.DataFrame):
+            return indicator
+        elif isinstance(indicator, pd.Series):
+            return indicator.to_frame()
+        else:
+            raise ValueError(
+                "Something went wrong during the calculation of the indicator."
+            )
 
 
 class SMA(ITechnicalIndicator):
@@ -30,23 +56,7 @@ class SMA(ITechnicalIndicator):
         self.length = length
         self.offset = offset
 
-    def calculate(self, klines: pd.DataFrame) -> pd.DataFrame:
-        self._sanity_checks(klines)
-        sma = self._try_calculate(klines)
-        return sma.to_frame()
-
-    def _try_calculate(self, klines: pd.DataFrame) -> pd.Series:
-        try:
-            sma = self._calculate_sma(klines)
-        except Exception as e:
-            raise e
-
-        if not isinstance(sma, pd.Series):
-            raise ValueError("Something went wrong during the calculation of the SMA.")
-
-        return sma
-
-    def _calculate_sma(self, klines: pd.DataFrame):
+    def _calculate_indicator(self, klines: pd.DataFrame) -> Any:
         sma = ta.sma(
             close=klines["CLOSE"],
             length=self.length,
@@ -67,23 +77,7 @@ class RSI(ITechnicalIndicator):
         self.drift = drift
         self.offset = offset
 
-    def calculate(self, klines: pd.DataFrame) -> pd.DataFrame:
-        self._sanity_checks(klines)
-        rsi = self._try_calculate(klines)
-        return rsi.to_frame()
-
-    def _try_calculate(self, klines: pd.DataFrame) -> pd.Series:
-        try:
-            rsi = self._calculate_rsi(klines)
-        except Exception as e:
-            raise e
-
-        if not isinstance(rsi, pd.Series):
-            raise ValueError("Something went wrong during the calculation of the RSI.")
-
-        return rsi
-
-    def _calculate_rsi(self, klines: pd.DataFrame):
+    def _calculate_indicator(self, klines: pd.DataFrame) -> Any:
         rsi = ta.rsi(
             close=klines["CLOSE"],
             length=self.length,
