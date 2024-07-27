@@ -169,6 +169,31 @@ class TestTechnicalIndicators:
 
         assert min_len == expected
 
+    @pytest.mark.parametrize(
+        "ti, expected", [("sma_5", ["SMA_5"]), ("rsi_5", ["RSI_5"])]
+    )
+    def test_get_indicator_names(self, ti: ITechnicalIndicator, expected, request):
+        ti = request.getfixturevalue(ti)
+
+        names = ti.get_indicator_names()
+
+        assert names == expected
+
+    @pytest.mark.parametrize(
+        "ti",
+        ["sma_5", "rsi_5"],
+    )
+    def test_get_indicator_names_equals_calculated_column_names(
+        self, example_klines, ti: ITechnicalIndicator, request
+    ):
+        ti = request.getfixturevalue(ti)
+        indicator = ti.calculate(klines=example_klines)
+
+        calculated_names = indicator.columns.tolist()
+        names = ti.get_indicator_names()
+
+        assert calculated_names == names
+
     def _make_df_to_testable_dict(self, df: pd.DataFrame):
         df = df.dropna()
         testable_dict = df.to_dict()

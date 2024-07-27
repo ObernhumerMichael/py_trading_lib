@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Any
+from typing import Any, List
 
 import pandas as pd
 import pandas_ta as ta
@@ -14,6 +14,10 @@ class ITechnicalIndicator(ABC):
 
     @abstractmethod
     def get_min_len(self) -> int:
+        pass
+
+    @abstractmethod
+    def get_indicator_names(self) -> List[str]:
         pass
 
     @abstractmethod
@@ -67,6 +71,12 @@ class SMA(ITechnicalIndicator):
     def get_min_len(self) -> int:
         return self.length
 
+    def get_indicator_names(self) -> List[str]:
+        """
+        Example return: ["SMA_5"]
+        """
+        return [f"SMA_{self.length}"]
+
 
 class RSI(ITechnicalIndicator):
     def __init__(
@@ -89,3 +99,9 @@ class RSI(ITechnicalIndicator):
 
     def get_min_len(self) -> int:
         return self.length
+
+    def get_indicator_names(self) -> List[str]:
+        """
+        Example return: ["RSI_5"]
+        """
+        return [f"RSI_{self.length}"]
