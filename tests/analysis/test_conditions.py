@@ -6,9 +6,14 @@ import pandas as pd
 from py_trading_lib.analysis.conditions import CheckRelation, ICondition
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture()
 def sample_data():
     return pd.DataFrame({"a": [1, 2, 3], "b": [3, 2, 1]})
+
+
+@pytest.fixture()
+def sample_data_with_none():
+    return pd.DataFrame({"a": [None, None, 3], "b": [None, 2, None]})
 
 
 class TestCondition:
@@ -31,6 +36,44 @@ class TestCondition:
         self, condition: ICondition, expected: List[bool], sample_data
     ):
         result = condition.is_condition_true(sample_data)
+        result = result.tolist()
+
+        assert result == expected
+
+    @pytest.mark.parametrize(
+        "condition",
+        [
+            (CheckRelation("a", "<", "b")),
+            (CheckRelation("a", ">", "b")),
+            (CheckRelation("a", "<=", "b")),
+            (CheckRelation("a", ">=", "b")),
+            (CheckRelation("a", "==", "b")),
+        ],
+    )
+    def test_is_string_condition_false_for_none(
+        self, condition: ICondition, sample_data_with_none
+    ):
+        expected = [False, False, False]
+
+        result = condition.is_condition_true(sample_data_with_none)
+        result = result.tolist()
+
+        assert result == expected
+
+    @pytest.mark.parametrize(
+        "condition, expected",
+        [
+            (CheckRelation("a", "<", 2), [False, False, False]),
+            (CheckRelation("a", ">", 2), [False, False, True]),
+            (CheckRelation("a", "<=", 2), [False, False, False]),
+            (CheckRelation("a", ">=", 2), [False, False, True]),
+            (CheckRelation("a", "==", 2), [False, False, False]),
+        ],
+    )
+    def test_is_number_condition_false_for_none(
+        self, condition: ICondition, expected: List[bool], sample_data_with_none
+    ):
+        result = condition.is_condition_true(sample_data_with_none)
         result = result.tolist()
 
         assert result == expected
