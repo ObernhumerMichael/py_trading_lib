@@ -9,7 +9,7 @@ comparison_types: TypeAlias = Union[float, int, str]
 
 class ICondition(ABC):
     @abstractmethod
-    def is_condition_true(self, klines: pd.DataFrame) -> pd.Series:
+    def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
         pass
 
     @abstractmethod
@@ -29,8 +29,8 @@ class CheckRelation(ICondition):
         elif isinstance(comparison_value, str):
             self.relation = _StringRelation(indicator_name, operator, comparison_value)
 
-    def is_condition_true(self, klines: pd.DataFrame) -> pd.Series:
-        return self.relation.is_condition_true(klines)
+    def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
+        return self.relation.is_condition_true(data)
 
     def get_condition_name(self) -> str:
         return self.relation.get_condition_name()
@@ -68,18 +68,18 @@ class _Relation:
 
 
 class _NumericRelation(_Relation, ICondition):
-    def is_condition_true(self, klines: pd.DataFrame) -> pd.Series:
+    def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
         result: pd.Series = self.check_relation(
-            klines[self.indicator_name], self.comparison_value
+            data[self.indicator_name], self.comparison_value
         )
         result.name = self.get_condition_name()
         return result
 
 
 class _StringRelation(_Relation, ICondition):
-    def is_condition_true(self, klines: pd.DataFrame) -> pd.Series:
+    def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
         result: pd.Series = self.check_relation(
-            klines[self.indicator_name], klines[self.comparison_value]
+            data[self.indicator_name], data[self.comparison_value]
         )
         result.name = self.get_condition_name()
         return result
