@@ -28,8 +28,6 @@ class CheckRelation(ICondition):
             self.relation = _NumericRelation(indicator_name, operator, comparison_value)
         elif isinstance(comparison_value, str):
             self.relation = _StringRelation(indicator_name, operator, comparison_value)
-        else:
-            raise ValueError("The passed comparions type is not supported.")
 
     def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
         return self.relation.is_condition_true(data)

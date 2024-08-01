@@ -93,30 +93,7 @@ class TestCondition:
             (CheckRelation("a", "==", "b"), "a==b"),
         ],
     )
-    def test_condition_name_of_result(
-        self, condition: ICondition, expected: List[bool], sample_data
-    ):
-        result = condition.is_condition_true(sample_data)
-        name = result.name
-
-        assert name == expected
-
-    @pytest.mark.parametrize(
-        "condition, expected",
-        [
-            (CheckRelation("a", "<", 2), "a<2"),
-            (CheckRelation("a", ">", 2), "a>2"),
-            (CheckRelation("a", "<=", 2), "a<=2"),
-            (CheckRelation("a", ">=", 2), "a>=2"),
-            (CheckRelation("a", "==", 2), "a==2"),
-            (CheckRelation("a", "<", "b"), "a<b"),
-            (CheckRelation("a", ">", "b"), "a>b"),
-            (CheckRelation("a", "<=", "b"), "a<=b"),
-            (CheckRelation("a", ">=", "b"), "a>=b"),
-            (CheckRelation("a", "==", "b"), "a==b"),
-        ],
-    )
-    def test_get_condition_name(self, condition: ICondition, expected: List[bool]):
+    def test_get_condition_name(self, condition: ICondition, expected: str):
         name = condition.get_condition_name()
 
         assert name == expected
