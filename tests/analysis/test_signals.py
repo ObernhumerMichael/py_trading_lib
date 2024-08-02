@@ -19,19 +19,9 @@ def sample_conditions():
 @pytest.fixture
 def sample_broken_condition():
     conditions = {
-        "a": [None, False, None],
-        "b": [True, None, None],
-        "c": [True, False, None],
-    }
-    return pd.DataFrame(conditions)
-
-
-@pytest.fixture
-def sample_mixed_condition():
-    conditions = {
-        "a": [True, True, False, None, False, None],
-        "b": [True, False, False, True, None, None],
-        "c": [True, False, False, True, False, None],
+        "a": [None, False, True],
+        "b": [True, False, True],
+        "c": [True, False, True],
     }
     return pd.DataFrame(conditions)
 
@@ -46,11 +36,6 @@ def signal_all_conditions_true_broken_conditions(sample_broken_condition):
     return SignalAllConditionsTrue(sample_broken_condition)
 
 
-@pytest.fixture
-def signal_all_conditions_true_mixed_conditions(sample_mixed_condition):
-    return SignalAllConditionsTrue(sample_mixed_condition)
-
-
 class TestSignals:
 
     @pytest.mark.parametrize("signal", [SignalAllConditionsTrue(pd.DataFrame())])
@@ -58,21 +43,41 @@ class TestSignals:
         with pytest.raises(ValueError):
             signal.is_signal_true()
 
+    @pytest.mark.parametrize("signal", ["signal_all_conditions_true_broken_conditions"])
+    def test_sanity_check_fail(self, signal: ISignal, request):
+        signal = request.getfixturevalue(signal)
+
+        with pytest.raises(ValueError):
+            signal._sanity_checks()
+
+    @pytest.mark.parametrize("signal", ["signal_all_conditions_true_valid_conditions"])
+    def test_sanity_check_pass(self, signal: ISignal, request):
+        signal = request.getfixturevalue(signal)
+
+        signal._sanity_checks()
+
     @pytest.mark.parametrize(
         "signal, expected",
         [
             ("signal_all_conditions_true_valid_conditions", [True, False, False]),
-            ("signal_all_conditions_true_broken_conditions", [False, False, False]),
-            (
-                "signal_all_conditions_true_mixed_conditions",
-                [True, False, False, False, False, False],
-            ),
         ],
     )
-    def test_is_signal_true(self, signal: ISignal, expected: List[bool], request):
+    def test_is_signal_true_valid_conditions(
+        self, signal: ISignal, expected: List[bool], request
+    ):
         signal = request.getfixturevalue(signal)
 
         result = signal.is_signal_true()
         result = result.tolist()
 
         assert result == expected
+
+    @pytest.mark.parametrize(
+        "signal",
+        ["signal_all_conditions_true_broken_conditions"],
+    )
+    def test_is_signal_true_invalid_conditions(self, signal: ISignal, request):
+        signal = request.getfixturevalue(signal)
+
+        with pytest.raises(ValueError):
+            signal.is_signal_true()
