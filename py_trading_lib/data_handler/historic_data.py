@@ -1,37 +1,32 @@
-import os
-
 import pandas as pd
 
-from ..utils.sanity_checks import check_cols_for_tohlcv
+from ..utils.sanity_checks import *
 
 
 class LocalKlines:
-    def get_from_csv(self, path: str) -> pd.DataFrame:
-        self._file_sanity_checks(path)
+    def get_tohlcv_from_csv(self, path: str) -> pd.DataFrame:
+        self._sanity_checks(path)
 
         data = self._try_read_data(path)
 
-        check_cols_for_tohlcv(data)
+        self._validate(data)
 
         return data
 
-    def _file_sanity_checks(self, path):
-        self._does_file_exist(path)
-        self._is_file_csv(path)
-
-    def _does_file_exist(self, path: str):
-        if not os.path.exists(path):
-            raise FileNotFoundError(f"The file on the path: {path} does not exist.")
-
-    def _is_file_csv(self, path: str):
-        if not path.endswith(".csv"):
-            raise ValueError(f"The file one {path} is not a CSV file.")
+    def _sanity_checks(self, path):
+        check_file_exist(path)
+        check_is_file_csv(path)
 
     def _try_read_data(self, path: str):
         try:
-            return self._read_data(path)
+            data = pd.read_csv(path)
         except Exception as e:
-            raise e
+            raise RuntimeError(
+                f"Something went wrong while reading the data from the file: {path}."
+            ) from e
 
-    def _read_data(self, path: str):
-        return pd.read_csv(path)
+        return data
+
+    def _validate(self, data: pd.DataFrame):
+        check_cols_for_tohlcv(data)
+        check_contains_only_numbers(data)
