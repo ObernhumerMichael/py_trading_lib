@@ -3,12 +3,12 @@ from abc import ABC, abstractmethod
 import pandas as pd
 
 
-class ISignal(ABC):
+class Signal(ABC):
     @abstractmethod
     def __init__(self, conditions: pd.DataFrame):
         self._conditions = conditions
 
-    def is_signal_true(self) -> pd.Series:
+    def calculate_signal(self) -> pd.Series:
         self._sanity_checks()
         signal = self._try_calculate_signal()
         return signal
@@ -46,7 +46,7 @@ class ISignal(ABC):
         pass
 
 
-class SignalAllConditionsTrue(ISignal):
+class SignalAllConditionsTrue(Signal):
     def __init__(self, conditions: pd.DataFrame):
         super().__init__(conditions)
 

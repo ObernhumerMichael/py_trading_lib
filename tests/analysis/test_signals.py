@@ -3,7 +3,7 @@ from typing import List
 import pytest
 import pandas as pd
 
-from py_trading_lib.analysis.signals import ISignal, SignalAllConditionsTrue
+from py_trading_lib.analysis.signals import Signal, SignalAllConditionsTrue
 
 
 @pytest.fixture
@@ -39,22 +39,22 @@ def signal_all_conditions_true_broken_conditions(sample_broken_condition):
 class TestSignals:
 
     @pytest.mark.parametrize("signal", ["signal_all_conditions_true_valid_conditions"])
-    def test_sanity_check_pass(self, signal: ISignal, request):
+    def test_sanity_check_pass(self, signal: Signal, request):
         signal = request.getfixturevalue(signal)
 
         signal._sanity_checks()
 
     @pytest.mark.parametrize("signal", ["signal_all_conditions_true_broken_conditions"])
-    def test_sanity_check_fail(self, signal: ISignal, request):
+    def test_sanity_check_fail(self, signal: Signal, request):
         signal = request.getfixturevalue(signal)
 
         with pytest.raises(ValueError):
             signal._sanity_checks()
 
     @pytest.mark.parametrize("signal", [SignalAllConditionsTrue(pd.DataFrame())])
-    def test_is_signal_true_empty_conditions(self, signal: ISignal):
+    def test_calculate_signal_empty_conditions(self, signal: Signal):
         with pytest.raises(ValueError):
-            signal.is_signal_true()
+            signal.calculate_signal()
 
     @pytest.mark.parametrize(
         "signal, expected",
@@ -62,12 +62,12 @@ class TestSignals:
             ("signal_all_conditions_true_valid_conditions", [True, False, False]),
         ],
     )
-    def test_is_signal_true_valid_conditions(
-        self, signal: ISignal, expected: List[bool], request
+    def test_calculate_signal_valid_conditions(
+        self, signal: Signal, expected: List[bool], request
     ):
         signal = request.getfixturevalue(signal)
 
-        result = signal.is_signal_true()
+        result = signal.calculate_signal()
         result = result.tolist()
 
         assert result == expected
@@ -76,8 +76,8 @@ class TestSignals:
         "signal",
         ["signal_all_conditions_true_broken_conditions"],
     )
-    def test_is_signal_true_invalid_conditions(self, signal: ISignal, request):
+    def test_calculate_signal_invalid_conditions(self, signal: Signal, request):
         signal = request.getfixturevalue(signal)
 
         with pytest.raises(ValueError):
-            signal.is_signal_true()
+            signal.calculate_signal()
