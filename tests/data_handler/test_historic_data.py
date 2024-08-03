@@ -1,7 +1,6 @@
 import pytest
-import pandas as pd
 
-from py_trading_lib.data_handler.historic_data import KlineChecks, LocalKlines
+from py_trading_lib.data_handler.historic_data import LocalKlines
 
 
 class TestLocalKlines:
@@ -31,22 +30,3 @@ class TestLocalKlines:
     def test_get_from_csv_wrong_format(self):
         with pytest.raises(ValueError):
             LocalKlines().get_from_csv("./tests/data_handler/wrong-format.csv")
-
-
-class TestKlineChecks:
-    def test_check_columns_fail(self, not_kline_data: pd.DataFrame):
-        with pytest.raises(ValueError):
-            KlineChecks().check_columns(not_kline_data)
-
-    def test_check_columns_pass(self, example_klines):
-        KlineChecks().check_columns(example_klines)
-
-    def test_check_has_min_len_fail(self, insufficient_klines: pd.DataFrame):
-        min_len = 10
-
-        with pytest.raises(ValueError):
-            KlineChecks().check_has_min_len(insufficient_klines, min_len)
-
-    def test_check_has_min_len_pass(self, example_klines: pd.DataFrame):
-        min_len = 10
-        KlineChecks().check_has_min_len(example_klines, min_len)

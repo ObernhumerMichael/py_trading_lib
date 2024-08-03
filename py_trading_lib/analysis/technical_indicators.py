@@ -4,7 +4,7 @@ from typing import Any, List
 import pandas as pd
 import pandas_ta as ta
 
-from py_trading_lib.data_handler.historic_data import KlineChecks
+from ..utils.sanity_checks import check_cols_for_tohlcv, check_has_min_len
 
 
 class ITechnicalIndicator(ABC):
@@ -31,8 +31,8 @@ class ITechnicalIndicator(ABC):
 
     def _sanity_checks(self, klines: pd.DataFrame):
         min_len = self.get_min_len()
-        KlineChecks().check_columns(klines)
-        KlineChecks().check_has_min_len(klines, min_len)
+        check_cols_for_tohlcv(klines)
+        check_has_min_len(klines, min_len)
 
     def _try_calculate(self, klines: pd.DataFrame) -> pd.DataFrame:
         try:
