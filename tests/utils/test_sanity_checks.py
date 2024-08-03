@@ -153,3 +153,13 @@ def test_check_is_file_csv_pass():
 def test_check_is_file_csv_fail():
     with pytest.raises(ValueError):
         check_is_file_csv("./README.md")
+
+
+@pytest.mark.parametrize("list1", [[], [1, 2], [1, 2, 3]])
+def test_check_is_list1_in_list2_pass(list1: List):
+    check_is_list1_in_list2(list1, [1, 2, 3])
+
+
+def test_check_is_list1_in_list2_fail():
+    with pytest.raises(ValueError):
+        check_is_list1_in_list2([1, 2, 3, 4], [1, 2])

@@ -3,7 +3,7 @@ from typing import List
 import pytest
 import pandas as pd
 
-from py_trading_lib.analysis.conditions import CheckRelation, ICondition
+from py_trading_lib.analysis.conditions import CheckRelation, Condition
 
 
 @pytest.fixture()
@@ -17,6 +17,28 @@ def sample_data_with_none():
 
 
 class TestCondition:
+    @pytest.mark.parametrize(
+        "condition",
+        [
+            CheckRelation("z", "<", 2),
+            CheckRelation("a", "<", "z"),
+            CheckRelation("z", "<", "a"),
+        ],
+    )
+    def test_is_condition_true_invalid_condition(
+        self, condition: Condition, sample_data: pd.DataFrame
+    ):
+        with pytest.raises(ValueError):
+            condition.is_condition_true(sample_data)
+
+    @pytest.mark.parametrize(
+        "condition",
+        [CheckRelation("z", "<", 2)],
+    )
+    def test_is_condition_true_no_data(self, condition: Condition):
+        with pytest.raises(ValueError):
+            condition.is_condition_true(pd.DataFrame())
+
     @pytest.mark.parametrize(
         "condition, expected",
         [
@@ -33,7 +55,7 @@ class TestCondition:
         ],
     )
     def test_is_condition_true(
-        self, condition: ICondition, expected: List[bool], sample_data
+        self, condition: Condition, expected: List[bool], sample_data
     ):
         result = condition.is_condition_true(sample_data)
         result = result.tolist()
@@ -51,7 +73,7 @@ class TestCondition:
         ],
     )
     def test_is_string_condition_false_for_none(
-        self, condition: ICondition, sample_data_with_none
+        self, condition: Condition, sample_data_with_none
     ):
         expected = [False, False, False]
 
@@ -71,7 +93,7 @@ class TestCondition:
         ],
     )
     def test_is_number_condition_false_for_none(
-        self, condition: ICondition, expected: List[bool], sample_data_with_none
+        self, condition: Condition, expected: List[bool], sample_data_with_none
     ):
         result = condition.is_condition_true(sample_data_with_none)
         result = result.tolist()
@@ -93,7 +115,7 @@ class TestCondition:
             (CheckRelation("a", "==", "b"), "a==b"),
         ],
     )
-    def test_get_condition_name(self, condition: ICondition, expected: str):
+    def test_get_condition_name(self, condition: Condition, expected: str):
         name = condition.get_condition_name()
 
         assert name == expected
