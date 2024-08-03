@@ -1,68 +1,48 @@
 from abc import ABC, abstractmethod
-from copy import deepcopy
-from typing import Any, List
 
 import pandas as pd
 
 
 class ISignal(ABC):
-    _conditions: pd.DataFrame
-
     @abstractmethod
     def __init__(self, conditions: pd.DataFrame):
         self._conditions = conditions
 
     def is_signal_true(self) -> pd.Series:
         self._sanity_checks()
-
-        result = self._try_calculate_signal()
-
-        return result
+        signal = self._try_calculate_signal()
+        return signal
 
     @abstractmethod
     def _sanity_checks(self) -> None:
         self._check_df_not_empty(self._conditions)
         self._check_df_only_bools(self._conditions)
 
-    def _check_df_not_empty(self, df: pd.DataFrame):
-        if len(df) == 0:
+    def _check_df_not_empty(self, df: pd.DataFrame) -> None:
+        if df.empty:
             raise ValueError(
-                "The conditions must contain values otherwise a signal can not be created."
+                "The conditions must contain values, otherwise a signal cannot be created."
             )
 
-    def _check_df_only_bools(self, df: pd.DataFrame):
-        cols = self._get_colum_names(df)
-        is_bool_mask = pd.DataFrame()
+    def _check_df_only_bools(self, df: pd.DataFrame) -> None:
+        column_types = df.dtypes
+        all_bools = column_types.eq(bool).all()
 
-        for col in cols:
-            col_bool_mask = df[col].map(type) == bool
-            is_bool_mask = pd.concat([is_bool_mask, col_bool_mask], axis=1)
-
-        is_only_bools = is_bool_mask.all(axis=None)
-
-        if is_only_bools == False:
+        if not all_bools:
             raise ValueError("The conditions passed contain values other than bool.")
-
-    def _get_colum_names(self, df: pd.DataFrame) -> List[str]:
-        return df.columns.tolist()
 
     def _try_calculate_signal(self) -> pd.Series:
         try:
             signal = self._calculate_signal()
         except Exception as e:
-            raise Exception(
-                "Someting went wrong during the calculation of the signal." + str(e)
-            )
-
-        if not isinstance(signal, pd.Series):
-            raise ValueError(
-                "Someting went wrong during the calculation of the signal. The signal was not a pandas Series."
-            )
+            raise RuntimeError(
+                "Something went wrong during the calculation of the signal."
+            ) from e
 
         return signal
 
     @abstractmethod
-    def _calculate_signal(self) -> Any:
+    def _calculate_signal(self) -> pd.Series:
         pass
 
 
@@ -73,5 +53,12 @@ class SignalAllConditionsTrue(ISignal):
     def _sanity_checks(self) -> None:
         return super()._sanity_checks()
 
-    def _calculate_signal(self) -> Any:
-        return self._conditions.all(axis=1)
+    def _calculate_signal(self) -> pd.Series:
+        signal = self._conditions.all(axis=1)
+        return self._validate(signal)
+
+    def _validate(self, signal: pd.Series | bool) -> pd.Series:
+        if isinstance(signal, pd.Series):
+            return signal
+        else:
+            raise TypeError("The calculted signal is not a pandas Series.")

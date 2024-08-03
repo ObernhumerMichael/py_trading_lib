@@ -38,10 +38,11 @@ def signal_all_conditions_true_broken_conditions(sample_broken_condition):
 
 class TestSignals:
 
-    @pytest.mark.parametrize("signal", [SignalAllConditionsTrue(pd.DataFrame())])
-    def test_is_signal_true_empty_conditions(self, signal: ISignal):
-        with pytest.raises(ValueError):
-            signal.is_signal_true()
+    @pytest.mark.parametrize("signal", ["signal_all_conditions_true_valid_conditions"])
+    def test_sanity_check_pass(self, signal: ISignal, request):
+        signal = request.getfixturevalue(signal)
+
+        signal._sanity_checks()
 
     @pytest.mark.parametrize("signal", ["signal_all_conditions_true_broken_conditions"])
     def test_sanity_check_fail(self, signal: ISignal, request):
@@ -50,11 +51,10 @@ class TestSignals:
         with pytest.raises(ValueError):
             signal._sanity_checks()
 
-    @pytest.mark.parametrize("signal", ["signal_all_conditions_true_valid_conditions"])
-    def test_sanity_check_pass(self, signal: ISignal, request):
-        signal = request.getfixturevalue(signal)
-
-        signal._sanity_checks()
+    @pytest.mark.parametrize("signal", [SignalAllConditionsTrue(pd.DataFrame())])
+    def test_is_signal_true_empty_conditions(self, signal: ISignal):
+        with pytest.raises(ValueError):
+            signal.is_signal_true()
 
     @pytest.mark.parametrize(
         "signal, expected",
