@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 
 import pandas as pd
 
+from ..utils.sanity_checks import check_not_empty, check_contains_only_bools
+
 
 class Signal(ABC):
     @abstractmethod
@@ -15,21 +17,8 @@ class Signal(ABC):
 
     @abstractmethod
     def _sanity_checks(self) -> None:
-        self._check_df_not_empty(self._conditions)
-        self._check_df_only_bools(self._conditions)
-
-    def _check_df_not_empty(self, df: pd.DataFrame) -> None:
-        if df.empty:
-            raise ValueError(
-                "The conditions must contain values, otherwise a signal cannot be created."
-            )
-
-    def _check_df_only_bools(self, df: pd.DataFrame) -> None:
-        column_types = df.dtypes
-        all_bools = column_types.eq(bool).all()
-
-        if not all_bools:
-            raise ValueError("The conditions passed contain values other than bool.")
+        check_not_empty(self._conditions)
+        check_contains_only_bools(self._conditions)
 
     def _try_calculate_signal(self) -> pd.Series:
         try:

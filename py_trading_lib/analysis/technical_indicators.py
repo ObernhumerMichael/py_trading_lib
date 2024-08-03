@@ -4,10 +4,10 @@ from typing import Any, List
 import pandas as pd
 import pandas_ta as ta
 
-from py_trading_lib.data_handler.historic_data import KlineChecks
+from ..utils.sanity_checks import check_cols_for_tohlcv, check_has_min_len
 
 
-class ITechnicalIndicator(ABC):
+class TechnicalIndicator(ABC):
     @abstractmethod
     def __init__(self) -> None:
         pass
@@ -31,8 +31,8 @@ class ITechnicalIndicator(ABC):
 
     def _sanity_checks(self, klines: pd.DataFrame):
         min_len = self.get_min_len()
-        KlineChecks().check_columns(klines)
-        KlineChecks().check_has_min_len(klines, min_len)
+        check_cols_for_tohlcv(klines)
+        check_has_min_len(klines, min_len)
 
     def _try_calculate(self, klines: pd.DataFrame) -> pd.DataFrame:
         try:
@@ -50,12 +50,12 @@ class ITechnicalIndicator(ABC):
         elif isinstance(indicator, pd.Series):
             return indicator.to_frame()
         else:
-            raise ValueError(
-                "Something went wrong during the calculation of the indicator."
+            raise TypeError(
+                f"Something went wrong during the calculation of the indicator/s: {self.get_indicator_names()}. They are neither a pandas DataFrame nor a pandas Series."
             )
 
 
-class SMA(ITechnicalIndicator):
+class SMA(TechnicalIndicator):
     def __init__(self, length: int, offset: int = 0) -> None:
         self.length = length
         self.offset = offset
@@ -78,7 +78,7 @@ class SMA(ITechnicalIndicator):
         return [f"SMA_{self.length}"]
 
 
-class RSI(ITechnicalIndicator):
+class RSI(TechnicalIndicator):
     def __init__(
         self, length: int = 14, scalar: float = 100, drift: int = 1, offset: int = 0
     ) -> None:

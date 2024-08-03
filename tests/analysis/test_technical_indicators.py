@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 
-from py_trading_lib.analysis.technical_indicators import RSI, SMA, ITechnicalIndicator
+from py_trading_lib.analysis.technical_indicators import RSI, SMA, TechnicalIndicator
 
 
 @pytest.fixture
@@ -95,7 +95,7 @@ class TestTechnicalIndicators:
     row_num = 10
 
     @pytest.mark.parametrize("ti", ["sma_5", "rsi_5"])
-    def test_calc_no_klines(self, ti: ITechnicalIndicator, request):
+    def test_calc_no_klines(self, ti: TechnicalIndicator, request):
         ti = request.getfixturevalue(ti)
 
         with pytest.raises(ValueError):
@@ -103,7 +103,7 @@ class TestTechnicalIndicators:
 
     @pytest.mark.parametrize("ti", ["sma_5", "rsi_5"])
     def test_calc_insufficient_klines(
-        self, ti: ITechnicalIndicator, insufficient_klines: pd.DataFrame, request
+        self, ti: TechnicalIndicator, insufficient_klines: pd.DataFrame, request
     ):
         ti = request.getfixturevalue(ti)
 
@@ -112,7 +112,7 @@ class TestTechnicalIndicators:
 
     @pytest.mark.parametrize("ti", ["sma_5", "rsi_5"])
     def test_calc_data_not_klines(
-        self, ti: ITechnicalIndicator, not_kline_data: pd.DataFrame, request
+        self, ti: TechnicalIndicator, not_kline_data: pd.DataFrame, request
     ):
         ti = request.getfixturevalue(ti)
 
@@ -127,7 +127,7 @@ class TestTechnicalIndicators:
         ],
     )
     def test_calc_result_first_rows(
-        self, example_klines, ti: ITechnicalIndicator, expected, request
+        self, example_klines, ti: TechnicalIndicator, expected, request
     ):
         expected = request.getfixturevalue(expected)
         ti = request.getfixturevalue(ti)
@@ -148,7 +148,7 @@ class TestTechnicalIndicators:
         ],
     )
     def test_calc_result_last_rows(
-        self, example_klines, ti: ITechnicalIndicator, expected, request
+        self, example_klines, ti: TechnicalIndicator, expected, request
     ):
         expected = request.getfixturevalue(expected)
         ti = request.getfixturevalue(ti)
@@ -162,7 +162,7 @@ class TestTechnicalIndicators:
         assert indicator == expected
 
     @pytest.mark.parametrize("ti, expected", [("sma_5", 5), ("rsi_5", 5)])
-    def test_get_min_len(self, ti: ITechnicalIndicator, expected, request):
+    def test_get_min_len(self, ti: TechnicalIndicator, expected, request):
         ti = request.getfixturevalue(ti)
 
         min_len = ti.get_min_len()
@@ -172,7 +172,7 @@ class TestTechnicalIndicators:
     @pytest.mark.parametrize(
         "ti, expected", [("sma_5", ["SMA_5"]), ("rsi_5", ["RSI_5"])]
     )
-    def test_get_indicator_names(self, ti: ITechnicalIndicator, expected, request):
+    def test_get_indicator_names(self, ti: TechnicalIndicator, expected, request):
         ti = request.getfixturevalue(ti)
 
         names = ti.get_indicator_names()
@@ -184,7 +184,7 @@ class TestTechnicalIndicators:
         ["sma_5", "rsi_5"],
     )
     def test_get_indicator_names_equals_calculated_column_names(
-        self, example_klines, ti: ITechnicalIndicator, request
+        self, example_klines, ti: TechnicalIndicator, request
     ):
         ti = request.getfixturevalue(ti)
         indicator = ti.calculate(klines=example_klines)

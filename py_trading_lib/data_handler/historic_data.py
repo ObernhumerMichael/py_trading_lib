@@ -2,6 +2,8 @@ import os
 
 import pandas as pd
 
+from ..utils.sanity_checks import check_cols_for_tohlcv
+
 
 class LocalKlines:
     def get_from_csv(self, path: str) -> pd.DataFrame:
@@ -9,7 +11,7 @@ class LocalKlines:
 
         data = self._try_read_data(path)
 
-        KlineChecks().check_columns(data)
+        check_cols_for_tohlcv(data)
 
         return data
 
@@ -33,20 +35,3 @@ class LocalKlines:
 
     def _read_data(self, path: str):
         return pd.read_csv(path)
-
-
-class KlineChecks:
-    def check_columns(self, klines: pd.DataFrame):
-        expected_columns = ["TIME", "OPEN", "HIGH", "LOW", "CLOSE", "VOLUME"]
-        columns = klines.columns.tolist()
-
-        if expected_columns != columns:
-            raise ValueError(f"The following columns are needed: {expected_columns}")
-
-    def check_has_min_len(self, klines: pd.DataFrame, min_len: int):
-        len_klines = len(klines)
-
-        if len_klines < min_len:
-            raise ValueError(
-                f"The klines have a length of {len_klines} and a min lenght of {min_len} is needed."
-            )
