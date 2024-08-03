@@ -25,8 +25,16 @@ class TestLocalKlines:
 
     def test_get_from_csv_wrong_file_ending(self):
         with pytest.raises(ValueError):
-            LocalKlines().get_from_csv("./tests/data_handler/wrong-file.txt")
+            LocalKlines().get_from_csv("./tests/data_handler/wrong_file.txt")
 
     def test_get_from_csv_wrong_format(self):
         with pytest.raises(ValueError):
-            LocalKlines().get_from_csv("./tests/data_handler/wrong-format.csv")
+            LocalKlines().get_from_csv("./tests/data_handler/wrong_format.csv")
+
+    def test_get_from_csv_missing_data(self):
+        with pytest.raises(ValueError):
+            LocalKlines().get_from_csv("./tests/data_handler/missing_data.csv")
+
+    def test_get_from_csv_broken_data(self):
+        with pytest.raises(TypeError):
+            LocalKlines().get_from_csv("./tests/data_handler/broken_data.csv")

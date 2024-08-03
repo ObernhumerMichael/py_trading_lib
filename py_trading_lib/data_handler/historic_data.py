@@ -2,7 +2,7 @@ import os
 
 import pandas as pd
 
-from ..utils.sanity_checks import check_cols_for_tohlcv
+from ..utils.sanity_checks import check_cols_for_tohlcv, check_contains_only_numbers
 
 
 class LocalKlines:
@@ -10,8 +10,6 @@ class LocalKlines:
         self._file_sanity_checks(path)
 
         data = self._try_read_data(path)
-
-        check_cols_for_tohlcv(data)
 
         return data
 
@@ -29,9 +27,19 @@ class LocalKlines:
 
     def _try_read_data(self, path: str):
         try:
-            return self._read_data(path)
+            data = self._read_data(path)
         except Exception as e:
-            raise e
+            raise RuntimeError(
+                f"Something went wrong while reading the the data from the file {path}."
+            ) from e
+
+        self._check_valid(data)
+
+        return data
+
+    def _check_valid(self, data: pd.DataFrame):
+        check_cols_for_tohlcv(data)
+        check_contains_only_numbers(data)
 
     def _read_data(self, path: str):
         return pd.read_csv(path)

@@ -1,3 +1,5 @@
+from typing import Any
+
 import pandas as pd
 
 
@@ -28,9 +30,37 @@ def check_not_empty(df: pd.DataFrame) -> None:
         )
 
 
-def check_contains_only_bools(df: pd.DataFrame) -> None:
-    column_types = df.dtypes
-    all_bools = column_types.eq(bool).all()
+def check_has_no_nans(df: pd.DataFrame) -> None:
+    is_na_map = df.isna()
+    contains_na = is_na_map.any(axis=None)
+    if contains_na == True:
+        raise ValueError("The DataFrame contains NaN or None values.")
 
-    if not all_bools:
-        raise TypeError("The pandas DataFrame contains values other than bool.")
+
+def check_contains_only_bools(df: pd.DataFrame) -> None:
+    _check_contains_only_type(df, bool)
+
+
+def _check_contains_only_type(df: pd.DataFrame, type: Any) -> None:
+    column_types = df.dtypes
+    is_correct_type = column_types.eq(type)
+    all_correct_type = is_correct_type.all()
+
+    if not all_correct_type:
+        raise TypeError(f"The pandas DataFrame contains values other than {type}.")
+
+
+def check_contains_only_numbers(df: pd.DataFrame) -> None:
+    column_types = df.dtypes
+    is_int64 = column_types == "int64"
+    is_float64 = column_types == "float64"
+    are_correct_types = is_int64 | is_float64
+
+    all_correct_type = are_correct_types.all()
+
+    if not all_correct_type:
+        raise TypeError(
+            f"The pandas DataFrame contains values other than int64 or float64."
+        )
+
+    check_has_no_nans(df)  # is needed because numpy.NaN is represented as float64
