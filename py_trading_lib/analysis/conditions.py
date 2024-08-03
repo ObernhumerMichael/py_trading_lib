@@ -3,11 +3,17 @@ from typing import Literal, TypeAlias, Union, Callable
 
 import pandas as pd
 
+from py_trading_lib.utils.sanity_checks import check_is_list1_in_list2, check_not_empty
+
 operators: TypeAlias = Literal["<", "<=", ">", ">=", "=="]
 comparison_types: TypeAlias = Union[float, int, str]
 
 
-class ICondition(ABC):
+class Condition(ABC):
+    @abstractmethod
+    def _sanity_checks(self, data: pd.DataFrame) -> None:
+        pass
+
     @abstractmethod
     def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
         pass
@@ -17,7 +23,7 @@ class ICondition(ABC):
         pass
 
 
-class CheckRelation(ICondition):
+class CheckRelation(Condition):
     def __init__(
         self,
         indicator_name: str,
@@ -30,7 +36,12 @@ class CheckRelation(ICondition):
             self.relation = _StringRelation(indicator_name, operator, comparison_value)
 
     def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
+        self._sanity_checks(data)
         return self.relation.is_condition_true(data)
+
+    def _sanity_checks(self, data: pd.DataFrame) -> None:
+        check_not_empty(data)
+        self.relation._sanity_checks(data)
 
     def get_condition_name(self) -> str:
         return self.relation.get_condition_name()
@@ -67,7 +78,7 @@ class _Relation:
         return self.condition_name
 
 
-class _NumericRelation(_Relation, ICondition):
+class _NumericRelation(_Relation, Condition):
     def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
         result: pd.Series = self.check_relation(
             data[self.indicator_name], self.comparison_value
@@ -75,11 +86,21 @@ class _NumericRelation(_Relation, ICondition):
         result.name = self.get_condition_name()
         return result
 
+    def _sanity_checks(self, data: pd.DataFrame) -> None:
+        indicator = [self.indicator_name]
+        columns = data.columns.tolist()
+        check_is_list1_in_list2(indicator, columns)
 
-class _StringRelation(_Relation, ICondition):
+
+class _StringRelation(_Relation, Condition):
     def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
         result: pd.Series = self.check_relation(
             data[self.indicator_name], data[self.comparison_value]
         )
         result.name = self.get_condition_name()
         return result
+
+    def _sanity_checks(self, data: pd.DataFrame) -> None:
+        indicators = [self.indicator_name, self.comparison_value]
+        columns = data.columns.tolist()
+        check_is_list1_in_list2(indicators, columns)

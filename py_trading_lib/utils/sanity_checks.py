@@ -1,5 +1,5 @@
 import os
-from typing import Any
+from typing import Any, List
 
 import pandas as pd
 
@@ -7,12 +7,22 @@ import pandas as pd
 def check_cols_for_tohlcv(klines: pd.DataFrame) -> None:
     required_cols = ["TIME", "OPEN", "HIGH", "LOW", "CLOSE", "VOLUME"]
     columns = klines.columns.tolist()
-    cols_exist = set(required_cols).issubset(set(columns))
 
-    if not cols_exist:
+    if not _is_list1_in_list2(required_cols, columns):
         raise ValueError(
             f"The following columns must be present in the DataFrame: {required_cols}. Currently only the following are present: {columns}"
         )
+
+
+def check_is_list1_in_list2(list1: List[Any], list2: List[Any]):
+    if not _is_list1_in_list2(list1, list2):
+        raise ValueError(
+            f"The list1 is not fully represented in list2. {list1}  \u2208 {list2}"
+        )
+
+
+def _is_list1_in_list2(list1: List[Any], list2: List[Any]) -> bool:
+    return set(list1).issubset(set(list2))
 
 
 def check_has_min_len(df: pd.DataFrame, min_len: int) -> None:
