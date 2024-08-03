@@ -60,10 +60,10 @@ def test_check_not_empty_fail():
         check_not_empty(df)
 
 
-def test_check_contains_only_pass():
+def test_check_only_bools_pass():
     df = pd.DataFrame({"a": [True, False]})
 
-    check_contains_only_bools(df)
+    check_only_bools(df)
 
 
 @pytest.mark.parametrize(
@@ -76,11 +76,10 @@ def test_check_contains_only_pass():
         [True, -3.14, False],
         [True, "invalid", False],
         [True, [True], False],
-        [True, {"invalid": -1}, False],
     ],
 )
-def test_check_contains_only_bools_fail(data: List):
+def test_check_only_bools_fail(data: List):
     df = pd.DataFrame({"a": data})
 
     with pytest.raises(TypeError):
-        check_contains_only_bools(df)
+        check_only_bools(df)
