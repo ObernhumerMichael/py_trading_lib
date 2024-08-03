@@ -1,3 +1,4 @@
+import os
 from typing import Any
 
 import pandas as pd
@@ -64,3 +65,13 @@ def check_contains_only_numbers(df: pd.DataFrame) -> None:
         )
 
     check_has_no_nans(df)  # is needed because numpy.NaN is represented as float64
+
+
+def check_file_exist(path: str):
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"The file on the path: {path} does not exist.")
+
+
+def check_is_file_csv(path: str):
+    if not path.endswith(".csv"):
+        raise ValueError(f"The file one {path} is not a CSV file.")

@@ -8,7 +8,7 @@ from py_trading_lib.data_handler.historic_data import LocalKlines
 
 @pytest.fixture
 def example_klines():
-    klines = LocalKlines().get_from_csv("./example_klines/BTC_USDT.csv")
+    klines = LocalKlines().get_tohlcv_from_csv("./example_klines/BTC_USDT.csv")
 
     klines = klines.tail(400)
     klines = klines.reset_index(drop=True)

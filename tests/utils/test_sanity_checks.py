@@ -135,3 +135,21 @@ def test_check_contains_only_numbers_fail(data: Dict):
 
     with pytest.raises(TypeError):
         check_contains_only_numbers(df)
+
+
+def test_check_file_exist_pass():
+    check_file_exist("./example_klines/BTC_USDT.csv")
+
+
+def test_check_file_exist_fail():
+    with pytest.raises(FileNotFoundError):
+        check_file_exist("./file_does_not_exist")
+
+
+def test_check_is_file_csv_pass():
+    check_is_file_csv("./example_klines/BTC_USDT.csv")
+
+
+def test_check_is_file_csv_fail():
+    with pytest.raises(ValueError):
+        check_is_file_csv("./README.md")
