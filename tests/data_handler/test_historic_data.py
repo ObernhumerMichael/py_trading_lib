@@ -1,6 +1,6 @@
 import pytest
 
-from py_trading_lib.data_handler.historic_data import LocalKlines
+from py_trading_lib.data_handler.historic_data import *
 
 
 class TestLocalKlines:

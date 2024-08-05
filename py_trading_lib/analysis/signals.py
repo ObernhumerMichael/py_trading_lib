@@ -2,7 +2,9 @@ from abc import ABC, abstractmethod
 
 import pandas as pd
 
-from ..utils.sanity_checks import check_not_empty, check_contains_only_bools
+import py_trading_lib.utils.sanity_checks as sanity
+
+__all__ = ["Signal", "SignalAllConditionsTrue"]
 
 
 class Signal(ABC):
@@ -17,8 +19,8 @@ class Signal(ABC):
 
     @abstractmethod
     def _perform_sanity_checks(self) -> None:
-        check_not_empty(self._conditions)
-        check_contains_only_bools(self._conditions)
+        sanity.check_not_empty(self._conditions)
+        sanity.check_contains_only_bools(self._conditions)
 
     def _try_calculate_signal(self) -> pd.Series:
         try:
