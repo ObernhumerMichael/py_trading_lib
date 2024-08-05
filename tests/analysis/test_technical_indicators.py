@@ -1,7 +1,7 @@
 import pytest
 import pandas as pd
 
-from py_trading_lib.analysis.technical_indicators import RSI, SMA, TechnicalIndicator
+from py_trading_lib.analysis.technical_indicators import *
 
 
 @pytest.fixture

@@ -1,6 +1,8 @@
 import pandas as pd
 
-from ..utils.sanity_checks import *
+import py_trading_lib.utils.sanity_checks as sanity
+
+__all__ = ["LocalKlines"]
 
 
 class LocalKlines:
@@ -14,8 +16,8 @@ class LocalKlines:
         return data
 
     def _perform_sanity_checks(self, path):
-        check_file_exist(path)
-        check_is_file_csv(path)
+        sanity.check_file_exist(path)
+        sanity.check_is_file_csv(path)
 
     def _try_read_data(self, path: str):
         try:
@@ -28,5 +30,5 @@ class LocalKlines:
         return data
 
     def _validate(self, data: pd.DataFrame):
-        check_cols_for_tohlcv(data)
-        check_contains_only_numbers(data)
+        sanity.check_cols_for_tohlcv(data)
+        sanity.check_contains_only_numbers(data)

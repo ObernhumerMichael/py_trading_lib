@@ -4,7 +4,9 @@ from typing import Any, List
 import pandas as pd
 import pandas_ta as ta
 
-from ..utils.sanity_checks import check_cols_for_tohlcv, check_has_min_len
+import py_trading_lib.utils.sanity_checks as sanity
+
+__all__ = ["TechnicalIndicator", "SMA", "RSI"]
 
 
 class TechnicalIndicator(ABC):
@@ -14,9 +16,9 @@ class TechnicalIndicator(ABC):
         return indicator
 
     def _perfrom_sanity_checks(self, klines: pd.DataFrame):
-        check_cols_for_tohlcv(klines)
+        sanity.check_cols_for_tohlcv(klines)
         min_len = self.get_min_len()
-        check_has_min_len(klines, min_len)
+        sanity.check_has_min_len(klines, min_len)
 
     def _try_calculate(self, klines: pd.DataFrame) -> pd.DataFrame:
         try:

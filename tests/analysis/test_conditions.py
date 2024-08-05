@@ -3,7 +3,7 @@ from typing import List
 import pytest
 import pandas as pd
 
-from py_trading_lib.analysis.conditions import CheckRelation, Condition
+from py_trading_lib.analysis.conditions import *
 
 
 @pytest.fixture()

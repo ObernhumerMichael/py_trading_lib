@@ -3,7 +3,7 @@ from typing import List
 import pytest
 import pandas as pd
 
-from py_trading_lib.analysis.signals import Signal, SignalAllConditionsTrue
+from py_trading_lib.analysis.signals import *
 
 
 @pytest.fixture
