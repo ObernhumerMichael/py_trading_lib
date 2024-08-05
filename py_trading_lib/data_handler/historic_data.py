@@ -5,7 +5,7 @@ from ..utils.sanity_checks import *
 
 class LocalKlines:
     def get_tohlcv_from_csv(self, path: str) -> pd.DataFrame:
-        self._sanity_checks(path)
+        self._perform_sanity_checks(path)
 
         data = self._try_read_data(path)
 
@@ -13,7 +13,7 @@ class LocalKlines:
 
         return data
 
-    def _sanity_checks(self, path):
+    def _perform_sanity_checks(self, path):
         check_file_exist(path)
         check_is_file_csv(path)
 
