@@ -11,7 +11,7 @@ comparison_types: TypeAlias = Union[float, int, str]
 
 class Condition(ABC):
     @abstractmethod
-    def _sanity_checks(self, data: pd.DataFrame) -> None:
+    def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
         pass
 
     @abstractmethod
@@ -36,12 +36,12 @@ class CheckRelation(Condition):
             self.relation = _StringRelation(indicator_name, operator, comparison_value)
 
     def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
-        self._sanity_checks(data)
+        self._perform_sanity_checks(data)
         return self.relation.is_condition_true(data)
 
-    def _sanity_checks(self, data: pd.DataFrame) -> None:
+    def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
         check_not_empty(data)
-        self.relation._sanity_checks(data)
+        self.relation._perform_sanity_checks(data)
 
     def get_condition_name(self) -> str:
         return self.relation.get_condition_name()
@@ -86,7 +86,7 @@ class _NumericRelation(_Relation, Condition):
         result.name = self.get_condition_name()
         return result
 
-    def _sanity_checks(self, data: pd.DataFrame) -> None:
+    def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
         indicator = [self.indicator_name]
         columns = data.columns.tolist()
         check_is_list1_in_list2(indicator, columns)
@@ -100,7 +100,7 @@ class _StringRelation(_Relation, Condition):
         result.name = self.get_condition_name()
         return result
 
-    def _sanity_checks(self, data: pd.DataFrame) -> None:
+    def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
         indicators = [self.indicator_name, self.comparison_value]
         columns = data.columns.tolist()
         check_is_list1_in_list2(indicators, columns)

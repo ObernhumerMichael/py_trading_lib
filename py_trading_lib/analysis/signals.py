@@ -11,12 +11,12 @@ class Signal(ABC):
         self._conditions = conditions
 
     def calculate_signal(self) -> pd.Series:
-        self._sanity_checks()
+        self._perform_sanity_checks()
         signal = self._try_calculate_signal()
         return signal
 
     @abstractmethod
-    def _sanity_checks(self) -> None:
+    def _perform_sanity_checks(self) -> None:
         check_not_empty(self._conditions)
         check_contains_only_bools(self._conditions)
 
@@ -39,8 +39,8 @@ class SignalAllConditionsTrue(Signal):
     def __init__(self, conditions: pd.DataFrame):
         super().__init__(conditions)
 
-    def _sanity_checks(self) -> None:
-        return super()._sanity_checks()
+    def _perform_sanity_checks(self) -> None:
+        return super()._perform_sanity_checks()
 
     def _calculate_signal(self) -> pd.Series:
         signal = self._conditions.all(axis=1)
