@@ -1,6 +1,8 @@
 from typing import List
+import pandas as pd
 
 from py_trading_lib.analysis import *
+import py_trading_lib.utils.sanity_checks as sanity
 
 __all__ = ["Analysis"]
 
@@ -21,3 +23,26 @@ class Analysis:
 
     def set_signal(self, signal: Signal):
         self._signal = signal
+
+    def _perform_sanity_checks(self, tohclv: pd.DataFrame) -> None:
+        sanity.check_not_empty(tohclv)
+        sanity.check_cols_for_tohlcv(tohclv)
+        self._check_correct_setup()
+
+    def _check_correct_setup(self):
+        if len(self._technical_indicators) == 0:
+            raise ValueError(
+                "A TechnicalIndicator must be set otherwise no signal can be generated."
+            )
+        if len(self._conditions) == 0:
+            raise ValueError(
+                "A Condition must be set otherwise no signal can be generated."
+            )
+        if not isinstance(self._signal, Signal):
+            raise ValueError(
+                "A Signal must be set otherwise no calculation can be made."
+            )
+
+    def calculate(self, tohclv: pd.DataFrame) -> pd.Series:
+        self._perform_sanity_checks(tohclv)
+        raise NotImplementedError

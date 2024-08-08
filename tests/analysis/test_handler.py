@@ -1,4 +1,32 @@
+import pytest
+
+import pandas as pd
+
 from py_trading_lib.analysis import *
+
+
+@pytest.fixture
+def example_analysis():
+    analysis = Analysis()
+
+    sma = analysis.add_ti(SMA(2))[0]
+    relation = analysis.add_condition(CheckRelation(sma, ">", "2"))
+    analysis.set_signal(SignalAllConditionsTrue([relation]))
+
+    return analysis
+
+
+@pytest.fixture
+def example_tohclv():
+    tohclv = {
+        "TIME": [1679144400000, 1679148000000, 1679151600000, 1679155200000],
+        "OPEN": [1, 1, 1, 1],
+        "HIGH": [1, 1, 1, 1],
+        "LOW": [1, 1, 1, 1],
+        "CLOSE": [1, 1, 10, 10],
+        "VOLUME": [1, 1, 1, 1],
+    }
+    return pd.DataFrame(tohclv)
 
 
 class TestAnalysis:
@@ -34,3 +62,14 @@ class TestAnalysis:
         analysis.set_signal(signal)
 
         assert analysis._signal is signal
+
+    def test_calculate_no_tohclv(
+        self, example_analysis: Analysis, not_kline_data: pd.DataFrame
+    ):
+        with pytest.raises(ValueError):
+            example_analysis.calculate(not_kline_data)
+
+    def test_calculate(self, example_analysis: Analysis, example_tohclv: pd.DataFrame):
+        result = example_analysis.calculate(example_tohclv)
+
+        assert result.tolist() == [False, False, True, True]
