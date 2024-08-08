@@ -12,7 +12,7 @@ def convert_to_df_from_sr_or_df(
         return pd.DataFrame(convert)
     else:
         raise TypeError(
-            f"The passed variable is neither a DataFrame nor a Series but a {type(convert)}"
+            f"The passed variable is neither a DataFrame nor a Series but a {type(convert)}. Thus the variable could not be converted to a DataFrame."
         )
 
 

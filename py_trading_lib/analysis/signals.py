@@ -4,6 +4,7 @@ from typing import List
 import pandas as pd
 
 import py_trading_lib.utils.sanity_checks as sanity
+import py_trading_lib.utils.utils as utils
 
 __all__ = ["Signal", "SignalAllConditionsTrue"]
 
@@ -16,9 +17,7 @@ class Signal(ABC):
     def calculate_signal(self, data: pd.DataFrame) -> pd.Series:
         self._perform_sanity_checks(data)
         data = self._select_only_needed_cols(data)
-
         signal = self._try_calculate_signal(data)
-
         return signal
 
     @abstractmethod
@@ -29,10 +28,7 @@ class Signal(ABC):
 
     def _select_only_needed_cols(self, df: pd.DataFrame) -> pd.DataFrame:
         selection = df[self._conditions]
-
-        if not isinstance(selection, pd.DataFrame):
-            raise TypeError("The selection of the conditions can only be a Dataframe")
-
+        selection = utils.convert_to_df_from_sr_or_df(selection)
         return selection
 
     def _try_calculate_signal(self, data) -> pd.Series:
