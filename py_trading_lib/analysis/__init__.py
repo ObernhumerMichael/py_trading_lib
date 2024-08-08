@@ -1,7 +1,7 @@
 from .technical_indicators import TechnicalIndicator, SMA, RSI
 from .conditions import Condition, CheckRelation
 from .signals import Signal, SignalAllConditionsTrue
-from .handler import AnalysisHandler
+from .handler import Analysis
 
 __all__ = [
     # TechnicalIndicator
@@ -15,5 +15,5 @@ __all__ = [
     "Signal",
     "SignalAllConditionsTrue",
     # handler
-    "AnalysisHandler",
+    "Analysis",
 ]

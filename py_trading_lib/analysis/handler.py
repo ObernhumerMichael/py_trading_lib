@@ -2,14 +2,14 @@ from typing import List
 
 from py_trading_lib.analysis import *
 
-__all__ = ["AnalysisHandler"]
+__all__ = ["Analysis"]
 
 
-class AnalysisHandler:
+class Analysis:
     def __init__(self) -> None:
         self._technical_indicators: List[TechnicalIndicator] = []
         self._conditions: List[Condition] = []
-        self._signals: List[Signal] = []
+        self._signal: Signal
 
     def add_ti(self, ti: TechnicalIndicator) -> List[str]:
         self._technical_indicators.append(ti)
@@ -19,5 +19,5 @@ class AnalysisHandler:
         self._conditions.append(condition)
         return condition.get_condition_name()
 
-    def add_signal(self, signal: Signal):
-        self._signals.append(signal)
+    def set_signal(self, signal: Signal):
+        self._signal = signal

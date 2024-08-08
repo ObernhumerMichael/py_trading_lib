@@ -1,11 +1,9 @@
-import pandas as pd
-
 from py_trading_lib.analysis import *
 
 
-class TestAnalysisHandlerAdds:
+class TestAnalysis:
     def test_add_ti_return_name(self):
-        analysis = AnalysisHandler()
+        analysis = Analysis()
         sma = SMA(10)
         expected = sma.get_indicator_names()
 
@@ -14,14 +12,14 @@ class TestAnalysisHandlerAdds:
         assert name == expected
 
     def test_add_ti_list(self):
-        analysis = AnalysisHandler()
+        analysis = Analysis()
 
         analysis.add_ti(SMA(10))
 
         assert len(analysis._technical_indicators) == 1
 
     def test_add_condition_return_name(self):
-        analysis = AnalysisHandler()
+        analysis = Analysis()
         condition = CheckRelation("test", "<", 2)
         expected = condition.get_condition_name()
 
@@ -30,8 +28,9 @@ class TestAnalysisHandlerAdds:
         assert name == expected
 
     def test_add_signal_list(self):
-        analysis = AnalysisHandler()
+        analysis = Analysis()
+        signal = SignalAllConditionsTrue(["a"])
 
-        analysis.add_signal(SignalAllConditionsTrue(pd.DataFrame()))
+        analysis.set_signal(signal)
 
-        assert len(analysis._signals) == 1
+        assert analysis._signal is signal
