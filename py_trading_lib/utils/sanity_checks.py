@@ -26,6 +26,14 @@ def check_cols_for_tohlcv(klines: pd.DataFrame) -> None:
         )
 
 
+def check_cols_exist_in_df(cols: List[str], df: pd.DataFrame):
+    df_cols = df.columns.tolist()
+    if not _is_list1_in_list2(cols, df_cols):
+        raise ValueError(
+            f"Not all expected columns:{cols} have been found in the DataFrame columns: {df_cols}"
+        )
+
+
 def check_is_list1_in_list2(list1: List[Any], list2: List[Any]):
     if not _is_list1_in_list2(list1, list2):
         raise ValueError(

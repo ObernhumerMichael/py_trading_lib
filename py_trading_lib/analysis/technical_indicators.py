@@ -1,10 +1,11 @@
 from abc import ABC, abstractmethod
-from typing import Any, List
+from typing import List
 
 import pandas as pd
 import pandas_ta as ta
 
 import py_trading_lib.utils.sanity_checks as sanity
+import py_trading_lib.utils.utils as utils
 
 __all__ = ["TechnicalIndicator", "SMA", "RSI"]
 
@@ -38,17 +39,6 @@ class TechnicalIndicator(ABC):
     def get_indicator_names(self) -> List[str]:
         pass
 
-    def _convert_to_dataframe(self, indicator: Any) -> pd.DataFrame:
-        if self._is_series_or_dataframe(indicator):
-            return pd.DataFrame(indicator)
-        else:
-            raise TypeError(
-                f"Something went wrong during the calculation of the indicator: {self.get_indicator_names()}. It is neither a pandas DataFrame nor a pandas Series."
-            )
-
-    def _is_series_or_dataframe(self, data: Any) -> bool:
-        return isinstance(data, pd.DataFrame) or isinstance(data, pd.Series)
-
     @abstractmethod
     def get_min_len(self) -> int:
         pass
@@ -65,7 +55,7 @@ class SMA(TechnicalIndicator):
             length=self._length,
             offset=self._offset,
         )
-        return self._convert_to_dataframe(sma)
+        return utils.convert_to_df_from_sr_or_df(sma)
 
     def get_min_len(self) -> int:
         return self._length
@@ -94,7 +84,7 @@ class RSI(TechnicalIndicator):
             drift=self._drift,
             offset=self._offset,
         )
-        return self._convert_to_dataframe(rsi)
+        return utils.convert_to_df_from_sr_or_df(rsi)
 
     def get_min_len(self) -> int:
         return self._length
