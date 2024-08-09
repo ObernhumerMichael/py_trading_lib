@@ -1,31 +1,33 @@
 from abc import ABC, abstractmethod
-from typing import Any, List
+from typing import List
 
 import pandas as pd
 import pandas_ta as ta
 
 import py_trading_lib.utils.sanity_checks as sanity
+import py_trading_lib.utils.utils as utils
+
 
 __all__ = ["TechnicalIndicator", "SMA", "RSI"]
 
 
 class TechnicalIndicator(ABC):
-    def calculate(self, klines: pd.DataFrame) -> pd.DataFrame:
-        self._perfrom_sanity_checks(klines)
-        indicator = self._try_calculate(klines)
+    def calculate(self, tohlcv: pd.DataFrame) -> pd.DataFrame:
+        self._perfrom_sanity_checks(tohlcv)
+        indicator = self._try_calculate(tohlcv)
         return indicator
 
-    def _perfrom_sanity_checks(self, klines: pd.DataFrame):
-        sanity.check_cols_for_tohlcv(klines)
+    def _perfrom_sanity_checks(self, tohlcv: pd.DataFrame):
+        sanity.check_cols_for_tohlcv(tohlcv)
         min_len = self.get_min_len()
-        sanity.check_has_min_len(klines, min_len)
+        sanity.check_has_min_len(tohlcv, min_len)
 
     def _try_calculate(self, klines: pd.DataFrame) -> pd.DataFrame:
         try:
             indicator = self._calculate_indicator(klines)
         except Exception as e:
             raise RuntimeError(
-                f"Something went wrong during the calculation of the indicator: {self.get_indicator_names()}"
+                f"Something went wrong during the calculation of the indicator: {self.get_names()}"
             ) from e
 
         return indicator
@@ -35,19 +37,8 @@ class TechnicalIndicator(ABC):
         pass
 
     @abstractmethod
-    def get_indicator_names(self) -> List[str]:
+    def get_names(self) -> List[str]:
         pass
-
-    def _convert_to_dataframe(self, indicator: Any) -> pd.DataFrame:
-        if self._is_series_or_dataframe(indicator):
-            return pd.DataFrame(indicator)
-        else:
-            raise TypeError(
-                f"Something went wrong during the calculation of the indicator: {self.get_indicator_names()}. It is neither a pandas DataFrame nor a pandas Series."
-            )
-
-    def _is_series_or_dataframe(self, data: Any) -> bool:
-        return isinstance(data, pd.DataFrame) or isinstance(data, pd.Series)
 
     @abstractmethod
     def get_min_len(self) -> int:
@@ -65,12 +56,12 @@ class SMA(TechnicalIndicator):
             length=self._length,
             offset=self._offset,
         )
-        return self._convert_to_dataframe(sma)
+        return utils.convert_to_df_from_sr_or_df(sma)
 
     def get_min_len(self) -> int:
         return self._length
 
-    def get_indicator_names(self) -> List[str]:
+    def get_names(self) -> List[str]:
         """
         Example return: ["SMA_5"]
         """
@@ -94,12 +85,12 @@ class RSI(TechnicalIndicator):
             drift=self._drift,
             offset=self._offset,
         )
-        return self._convert_to_dataframe(rsi)
+        return utils.convert_to_df_from_sr_or_df(rsi)
 
     def get_min_len(self) -> int:
         return self._length
 
-    def get_indicator_names(self) -> List[str]:
+    def get_names(self) -> List[str]:
         """
         Example return: ["RSI_5"]
         """

@@ -27,43 +27,81 @@ def sample_broken_condition():
 
 
 @pytest.fixture
-def signal_all_conditions_true_valid_conditions(sample_conditions):
-    return SignalAllConditionsTrue(sample_conditions)
+def sample_extended_conditions():
+    conditions = {
+        "a": [True, True, True],
+        "b": [True, True, True],
+        "c": [True, True, True],
+        "z": ["TEST", False, False],
+    }
+    return pd.DataFrame(conditions)
 
 
 @pytest.fixture
-def signal_all_conditions_true_broken_conditions(sample_broken_condition):
-    return SignalAllConditionsTrue(sample_broken_condition)
+def signal_all_conditions_true():
+    return SignalAllConditionsTrue(["a", "b", "c"])
 
 
 class TestSignals:
-    @pytest.mark.parametrize("signal", [SignalAllConditionsTrue(pd.DataFrame())])
+    @pytest.mark.parametrize("signal", [SignalAllConditionsTrue(["a"])])
     def test_calculate_signal_empty_conditions(self, signal: Signal):
         with pytest.raises(ValueError):
-            signal.calculate_signal()
+            signal.calculate_signal(pd.DataFrame())
+
+    @pytest.mark.parametrize("signal", [SignalAllConditionsTrue(["z"])])
+    def test_calculate_signal_incomplete_data(
+        self, signal: Signal, sample_conditions: pd.DataFrame
+    ):
+        with pytest.raises(ValueError):
+            signal.calculate_signal(sample_conditions)
 
     @pytest.mark.parametrize(
-        "signal, expected",
-        [
-            ("signal_all_conditions_true_valid_conditions", [True, False, False]),
-        ],
+        "signal_fix, expected",
+        [("signal_all_conditions_true", [True, False, False])],
     )
     def test_calculate_signal_valid_conditions(
-        self, signal: Signal, expected: List[bool], request
+        self,
+        signal_fix: str,
+        sample_conditions: pd.DataFrame,
+        expected: List[bool],
+        request: pytest.FixtureRequest,
     ):
-        signal = request.getfixturevalue(signal)
+        signal = request.getfixturevalue(signal_fix)
 
-        result = signal.calculate_signal()
+        result = signal.calculate_signal(sample_conditions)
         result = result.tolist()
 
         assert result == expected
 
     @pytest.mark.parametrize(
-        "signal",
-        ["signal_all_conditions_true_broken_conditions"],
+        "signal_fix",
+        ["signal_all_conditions_true"],
     )
-    def test_calculate_signal_invalid_conditions(self, signal: Signal, request):
-        signal = request.getfixturevalue(signal)
+    def test_calculate_signal_invalid_conditions(
+        self,
+        signal_fix: str,
+        sample_broken_condition: pd.DataFrame,
+        request: pytest.FixtureRequest,
+    ):
+        signal = request.getfixturevalue(signal_fix)
 
         with pytest.raises(TypeError):
-            signal.calculate_signal()
+            signal.calculate_signal(sample_broken_condition)
+
+    @pytest.mark.parametrize(
+        "signal_fix, expected",
+        [("signal_all_conditions_true", [True, True, True])],
+    )
+    def test_calculate_signal_only_expected_cols(
+        self,
+        signal_fix: str,
+        expected: List[bool],
+        sample_extended_conditions: pd.DataFrame,
+        request: pytest.FixtureRequest,
+    ):
+        signal = request.getfixturevalue(signal_fix)
+
+        result = signal.calculate_signal(sample_extended_conditions)
+        result = result.tolist()
+
+        assert result == expected

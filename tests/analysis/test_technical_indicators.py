@@ -132,7 +132,7 @@ class TestTechnicalIndicators:
         expected = request.getfixturevalue(expected)
         ti = request.getfixturevalue(ti)
 
-        indicator = ti.calculate(klines=example_klines)
+        indicator = ti.calculate(tohlcv=example_klines)
         indicator = indicator.head(self.row_num)
 
         indicator = self._make_df_to_testable_dict(indicator)
@@ -153,7 +153,7 @@ class TestTechnicalIndicators:
         expected = request.getfixturevalue(expected)
         ti = request.getfixturevalue(ti)
 
-        indicator = ti.calculate(klines=example_klines)
+        indicator = ti.calculate(tohlcv=example_klines)
         indicator = indicator.tail(self.row_num)
 
         indicator = self._make_df_to_testable_dict(indicator)
@@ -172,10 +172,10 @@ class TestTechnicalIndicators:
     @pytest.mark.parametrize(
         "ti, expected", [("sma_5", ["SMA_5"]), ("rsi_5", ["RSI_5"])]
     )
-    def test_get_indicator_names(self, ti: TechnicalIndicator, expected, request):
+    def test_get_names(self, ti: TechnicalIndicator, expected, request):
         ti = request.getfixturevalue(ti)
 
-        names = ti.get_indicator_names()
+        names = ti.get_names()
 
         assert names == expected
 
@@ -183,14 +183,14 @@ class TestTechnicalIndicators:
         "ti",
         ["sma_5", "rsi_5"],
     )
-    def test_get_indicator_names_equals_calculated_column_names(
+    def test_get_names_equals_calculated_column_names(
         self, example_klines, ti: TechnicalIndicator, request
     ):
         ti = request.getfixturevalue(ti)
-        indicator = ti.calculate(klines=example_klines)
+        indicator = ti.calculate(tohlcv=example_klines)
 
         calculated_names = indicator.columns.tolist()
-        names = ti.get_indicator_names()
+        names = ti.get_names()
 
         assert calculated_names == names
 

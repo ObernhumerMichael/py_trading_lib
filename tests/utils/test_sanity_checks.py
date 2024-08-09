@@ -4,6 +4,7 @@ from typing import Dict, List
 import pandas as pd
 
 from py_trading_lib.utils.sanity_checks import *
+from py_trading_lib.utils.sanity_checks import check_cols_exist_in_df
 
 
 @pytest.fixture
@@ -30,6 +31,19 @@ def test_check_cols_for_tohlcv_pass(klines: str, request: pytest.FixtureRequest)
     tohlcv: pd.DataFrame = request.getfixturevalue(klines)
 
     check_cols_for_tohlcv(tohlcv)
+
+
+def test_check_cols_exist_in_df_fail():
+    df = pd.DataFrame({"a": [1, 2, 3]})
+
+    with pytest.raises(ValueError):
+        check_cols_exist_in_df(["z"], df)
+
+
+def test_check_cols_exist_in_df_pass():
+    df = pd.DataFrame({"a": [1, 2, 3], "b": [1, 2, 3]})
+
+    check_cols_exist_in_df(["b"], df)
 
 
 def test_check_has_min_len_fail(insufficient_klines: pd.DataFrame):

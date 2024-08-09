@@ -21,7 +21,7 @@ class Condition(ABC):
         pass
 
     @abstractmethod
-    def get_condition_name(self) -> str:
+    def get_name(self) -> str:
         pass
 
 
@@ -45,8 +45,8 @@ class CheckRelation(Condition):
         sanity.check_not_empty(data)
         self.relation._perform_sanity_checks(data)
 
-    def get_condition_name(self) -> str:
-        return self.relation.get_condition_name()
+    def get_name(self) -> str:
+        return self.relation.get_name()
 
 
 class _Relation:
@@ -76,7 +76,7 @@ class _Relation:
             raise ValueError(f"Invalid relational operator: {operator}")
         return operators[operator]
 
-    def get_condition_name(self):
+    def get_name(self):
         return self.condition_name
 
 
@@ -85,7 +85,7 @@ class _NumericRelation(_Relation, Condition):
         result: pd.Series = self.check_relation(
             data[self.indicator_name], self.comparison_value
         )
-        result.name = self.get_condition_name()
+        result.name = self.get_name()
         return result
 
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
@@ -99,7 +99,7 @@ class _StringRelation(_Relation, Condition):
         result: pd.Series = self.check_relation(
             data[self.indicator_name], data[self.comparison_value]
         )
-        result.name = self.get_condition_name()
+        result.name = self.get_name()
         return result
 
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
