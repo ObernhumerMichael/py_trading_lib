@@ -16,9 +16,15 @@ __all__ = [
 ]
 
 
-def check_cols_for_tohlcv(klines: pd.DataFrame) -> None:
+def check_tohlcv(tohlcv: pd.DataFrame) -> None:
+    check_not_empty(tohlcv)
+    check_cols_for_tohlcv(tohlcv)
+    check_has_no_nans(tohlcv)
+
+
+def check_cols_for_tohlcv(tohlcv: pd.DataFrame) -> None:
     required_cols = ["TIME", "OPEN", "HIGH", "LOW", "CLOSE", "VOLUME"]
-    columns = klines.columns.tolist()
+    columns = tohlcv.columns.tolist()
 
     if not _is_list1_in_list2(required_cols, columns):
         raise ValueError(

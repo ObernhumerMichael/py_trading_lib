@@ -26,8 +26,7 @@ class Analysis:
         self._signal = signal
 
     def _perform_sanity_checks(self, tohlcv: pd.DataFrame) -> None:
-        sanity.check_not_empty(tohlcv)
-        sanity.check_cols_for_tohlcv(tohlcv)
+        sanity.check_tohlcv(tohlcv)
         self._check_correct_setup()
 
     def _check_correct_setup(self) -> None:

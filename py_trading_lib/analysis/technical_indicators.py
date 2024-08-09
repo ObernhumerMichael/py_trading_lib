@@ -18,7 +18,7 @@ class TechnicalIndicator(ABC):
         return indicator
 
     def _perfrom_sanity_checks(self, tohlcv: pd.DataFrame):
-        sanity.check_cols_for_tohlcv(tohlcv)
+        sanity.check_tohlcv(tohlcv)
         min_len = self.get_min_len()
         sanity.check_has_min_len(tohlcv, min_len)
 
