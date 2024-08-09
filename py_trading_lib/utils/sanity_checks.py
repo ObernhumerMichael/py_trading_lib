@@ -37,7 +37,7 @@ def check_cols_exist_in_df(cols: List[str], df: pd.DataFrame):
 def check_is_list1_in_list2(list1: List[Any], list2: List[Any]):
     if not _is_list1_in_list2(list1, list2):
         raise ValueError(
-            f"The list1 is not fully represented in list2. {list1}  \u2208 {list2}"
+            f"The list1 is not fully represented in list2. {list1}  \u2284 {list2}"
         )
 
 

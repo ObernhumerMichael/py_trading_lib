@@ -32,7 +32,7 @@ def sample_extended_conditions():
         "a": [True, True, True],
         "b": [True, True, True],
         "c": [True, True, True],
-        "z": [False, False, False],
+        "z": ["TEST", False, False],
     }
     return pd.DataFrame(conditions)
 

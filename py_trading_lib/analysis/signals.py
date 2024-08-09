@@ -24,6 +24,7 @@ class Signal(ABC):
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
         sanity.check_not_empty(data)
         sanity.check_cols_exist_in_df(self._conditions, data)
+        data = self._select_only_needed_cols(data)
         sanity.check_contains_only_bools(data)
 
     def _select_only_needed_cols(self, df: pd.DataFrame) -> pd.DataFrame:
@@ -34,6 +35,7 @@ class Signal(ABC):
     def _try_calculate_signal(self, data) -> pd.Series:
         try:
             signal = self._calculate_signal(data)
+            signal.name = self.get_name()
         except Exception as e:
             raise RuntimeError(
                 "Something went wrong during the calculation of the signal."
