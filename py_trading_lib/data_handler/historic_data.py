@@ -29,6 +29,6 @@ class LocalKlines:
 
         return data
 
-    def _validate(self, data: pd.DataFrame):
-        sanity.check_cols_for_tohlcv(data)
-        sanity.check_contains_only_numbers(data)
+    def _validate(self, tohlcv: pd.DataFrame):
+        sanity.check_tohlcv(tohlcv)
+        sanity.check_contains_only_numbers(tohlcv)
