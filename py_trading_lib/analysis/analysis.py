@@ -43,6 +43,14 @@ class Analysis:
                 "A Signal must be set otherwise no calculation can be made."
             )
 
-    def calculate(self, tohclv: pd.DataFrame) -> pd.Series:
-        self._perform_sanity_checks(tohclv)
+    def calculate(self, tohlcv: pd.DataFrame) -> pd.Series:
+        self._perform_sanity_checks(tohlcv)
+        technical_indicators = self._calculate_technical_indicators(tohlcv)
         raise NotImplementedError
+
+    def _calculate_technical_indicators(self, tohlcv: pd.DataFrame) -> pd.DataFrame:
+        calculated_tis: List[pd.DataFrame] = []
+        for ti in self._technical_indicators:
+            calculated_ti = ti.calculate(tohlcv)
+            calculated_tis.append(calculated_ti)
+        return pd.concat(calculated_tis)
