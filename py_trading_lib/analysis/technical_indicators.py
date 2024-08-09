@@ -7,26 +7,27 @@ import pandas_ta as ta
 import py_trading_lib.utils.sanity_checks as sanity
 import py_trading_lib.utils.utils as utils
 
+
 __all__ = ["TechnicalIndicator", "SMA", "RSI"]
 
 
 class TechnicalIndicator(ABC):
-    def calculate(self, klines: pd.DataFrame) -> pd.DataFrame:
-        self._perfrom_sanity_checks(klines)
-        indicator = self._try_calculate(klines)
+    def calculate(self, tohlcv: pd.DataFrame) -> pd.DataFrame:
+        self._perfrom_sanity_checks(tohlcv)
+        indicator = self._try_calculate(tohlcv)
         return indicator
 
-    def _perfrom_sanity_checks(self, klines: pd.DataFrame):
-        sanity.check_cols_for_tohlcv(klines)
+    def _perfrom_sanity_checks(self, tohlcv: pd.DataFrame):
+        sanity.check_cols_for_tohlcv(tohlcv)
         min_len = self.get_min_len()
-        sanity.check_has_min_len(klines, min_len)
+        sanity.check_has_min_len(tohlcv, min_len)
 
     def _try_calculate(self, klines: pd.DataFrame) -> pd.DataFrame:
         try:
             indicator = self._calculate_indicator(klines)
         except Exception as e:
             raise RuntimeError(
-                f"Something went wrong during the calculation of the indicator: {self.get_indicator_names()}"
+                f"Something went wrong during the calculation of the indicator: {self.get_names()}"
             ) from e
 
         return indicator
@@ -36,7 +37,7 @@ class TechnicalIndicator(ABC):
         pass
 
     @abstractmethod
-    def get_indicator_names(self) -> List[str]:
+    def get_names(self) -> List[str]:
         pass
 
     @abstractmethod
@@ -60,7 +61,7 @@ class SMA(TechnicalIndicator):
     def get_min_len(self) -> int:
         return self._length
 
-    def get_indicator_names(self) -> List[str]:
+    def get_names(self) -> List[str]:
         """
         Example return: ["SMA_5"]
         """
@@ -89,7 +90,7 @@ class RSI(TechnicalIndicator):
     def get_min_len(self) -> int:
         return self._length
 
-    def get_indicator_names(self) -> List[str]:
+    def get_names(self) -> List[str]:
         """
         Example return: ["RSI_5"]
         """

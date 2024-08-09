@@ -33,7 +33,7 @@ class TestAnalysis:
     def test_add_ti_return_name(self):
         analysis = Analysis()
         sma = SMA(10)
-        expected = sma.get_indicator_names()
+        expected = sma.get_names()
 
         name = analysis.add_ti(sma)
 
@@ -49,7 +49,7 @@ class TestAnalysis:
     def test_add_condition_return_name(self):
         analysis = Analysis()
         condition = CheckRelation("test", "<", 2)
-        expected = condition.get_condition_name()
+        expected = condition.get_name()
 
         name = analysis.add_condition(condition)
 

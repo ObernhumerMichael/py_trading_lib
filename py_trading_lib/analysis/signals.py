@@ -45,6 +45,10 @@ class Signal(ABC):
     def _calculate_signal(self, data: pd.DataFrame) -> pd.Series:
         pass
 
+    @abstractmethod
+    def get_name(self) -> str:
+        pass
+
 
 class SignalAllConditionsTrue(Signal):
     def __init__(self, conditions: List[str]):
@@ -62,3 +66,6 @@ class SignalAllConditionsTrue(Signal):
             return signal
         else:
             raise TypeError("The calculted signal is not a pandas Series.")
+
+    def get_name(self) -> str:
+        return "SignalAllConditionsTrue"

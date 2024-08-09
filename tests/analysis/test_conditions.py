@@ -115,7 +115,7 @@ class TestCondition:
             (CheckRelation("a", "==", "b"), "a==b"),
         ],
     )
-    def test_get_condition_name(self, condition: Condition, expected: str):
-        name = condition.get_condition_name()
+    def test_get_name(self, condition: Condition, expected: str):
+        name = condition.get_name()
 
         assert name == expected
