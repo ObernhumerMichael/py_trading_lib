@@ -161,7 +161,7 @@ class TestConditionGeneral:
             (
                 CheckAllTrue(["a", "b", "c"]),
                 "sample_extended_conditions",
-                [True, False, False],
+                [True, True, True],
             ),
         ],
     )

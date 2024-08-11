@@ -16,7 +16,6 @@ class Condition(ABC):
     def calculate(self, data: pd.DataFrame) -> pd.Series:
         self._perform_sanity_checks(data)
         condition = self._try_calculate(data)
-        condition.name = self.get_name()
         return condition
 
     @abstractmethod
@@ -26,6 +25,7 @@ class Condition(ABC):
     def _try_calculate(self, data: pd.DataFrame) -> pd.Series:
         try:
             condition = self._calculate(data)
+            condition.name = self.get_name()
         except Exception as e:
             raise RuntimeError(
                 f"Something went wrong during the calculation of the condition: {self.get_name()}."
@@ -36,10 +36,6 @@ class Condition(ABC):
     @abstractmethod
     def _calculate(self, data: pd.DataFrame) -> pd.Series:
         pass
-
-    # @abstractmethod
-    # def get_min_len(self) -> int:
-    #     pass
 
     @abstractmethod
     def get_name(self) -> str:
@@ -141,8 +137,8 @@ class CheckAllTrue(Condition):
         self._check_conditions_empty()
         sanity.check_cols_exist_in_df(self._conditions, data)
 
-        data = self._select_only_needed_cols(data)
-        sanity.check_contains_only_bools(data)
+        needed_data = self._select_only_needed_cols(data)
+        sanity.check_contains_only_bools(needed_data)
 
     def _check_conditions_empty(self) -> None:
         if len(self._conditions) == 0:
@@ -154,7 +150,8 @@ class CheckAllTrue(Condition):
         return selection
 
     def _calculate(self, data: pd.DataFrame) -> pd.Series:
-        signal = data.all(axis=1)
+        data_to_calc = self._select_only_needed_cols(data)
+        signal = data_to_calc.all(axis=1)
         signal = self._validate(signal)
         return signal
 

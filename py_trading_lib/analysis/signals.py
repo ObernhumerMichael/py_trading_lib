@@ -24,12 +24,11 @@ class Signal(ABC):
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
         sanity.check_not_empty(data)
         sanity.check_cols_exist_in_df(self._conditions, data)
-        data = self._select_only_needed_cols(data)
-        sanity.check_contains_only_bools(data)
+        needed_data = self._select_only_needed_cols(data)
+        sanity.check_contains_only_bools(needed_data)
 
     def _try_calculate(self, data) -> pd.Series:
         try:
-            data = self._select_only_needed_cols(data)
             signal = self._calculate(data)
             signal.name = self.get_name()
         except Exception as e:
@@ -56,13 +55,14 @@ class Signal(ABC):
 class SignalAllConditionsTrue(Signal):
     def __init__(self, conditions: List[str]):
         super().__init__(conditions)
+        self._condition = CheckAllTrue(self._conditions)
 
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
-        return super()._perform_sanity_checks(data)
+        self._condition._perform_sanity_checks(data)
+        # super()._perform_sanity_checks(data)
 
     def _calculate(self, data: pd.DataFrame) -> pd.Series:
-        condition = CheckAllTrue(self._conditions)
-        signal = condition._calculate(data)
+        signal = self._condition._calculate(data)
         return signal
 
     def get_name(self) -> str:
