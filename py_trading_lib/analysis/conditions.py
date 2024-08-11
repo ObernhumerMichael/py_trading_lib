@@ -1,20 +1,21 @@
 from abc import ABC, abstractmethod
-from typing import Literal, TypeAlias, Union, Callable
+from typing import Literal, TypeAlias, Union, Callable, List
 
 import pandas as pd
 
 import py_trading_lib.utils.sanity_checks as sanity
+import py_trading_lib.utils.utils as utils
 
 operators: TypeAlias = Literal["<", "<=", ">", ">=", "=="]
 comparison_types: TypeAlias = Union[float, int, str]
 
-__all__ = ["Condition", "CheckRelation"]
+__all__ = ["Condition", "CheckRelation", "CheckAllTrue"]
 
 
 class Condition(ABC):
     @abstractmethod
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
-        pass
+        sanity.check_not_empty(data)
 
     @abstractmethod
     def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
@@ -42,7 +43,6 @@ class CheckRelation(Condition):
         return self.relation.is_condition_true(data)
 
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
-        sanity.check_not_empty(data)
         self.relation._perform_sanity_checks(data)
 
     def get_name(self) -> str:
@@ -89,9 +89,9 @@ class _NumericRelation(_Relation, Condition):
         return result
 
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
+        super()._perform_sanity_checks(data)
         indicator = [self.indicator_name]
-        columns = data.columns.tolist()
-        sanity.check_is_list1_in_list2(indicator, columns)
+        sanity.check_cols_exist_in_df(indicator, data)
 
 
 class _StringRelation(_Relation, Condition):
@@ -103,6 +103,41 @@ class _StringRelation(_Relation, Condition):
         return result
 
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
+        super()._perform_sanity_checks(data)
         indicators = [self.indicator_name, self.comparison_value]
-        columns = data.columns.tolist()
-        sanity.check_is_list1_in_list2(indicators, columns)
+        sanity.check_cols_exist_in_df(indicators, data)
+
+
+class CheckAllTrue(Condition):
+    def __init__(self, conditions: List[str]):
+        self._conditions = conditions
+
+    def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
+        super()._perform_sanity_checks(data)
+        self._check_conditions_empty()
+        sanity.check_cols_exist_in_df(self._conditions, data)
+        data = self._select_only_needed_cols(data)
+        sanity.check_contains_only_bools(data)
+
+    def _check_conditions_empty(self) -> None:
+        if len(self._conditions) < 2:
+            raise ValueError("The there must be at least two conditions to be checked")
+
+    def _select_only_needed_cols(self, df: pd.DataFrame) -> pd.DataFrame:
+        selection = df[self._conditions]
+        selection = utils.convert_to_df_from_sr_or_df(selection)
+        return selection
+
+    def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
+        self._perform_sanity_checks(data)
+        signal = data.all(axis=1)
+        return self._validate(signal)
+
+    def _validate(self, signal: pd.Series | bool) -> pd.Series:
+        if isinstance(signal, pd.Series):
+            return signal
+        else:
+            raise TypeError("The calculted result is not a pandas Series.")
+
+    def get_name(self) -> str:
+        return f"CheckAllTrue={self._conditions}"

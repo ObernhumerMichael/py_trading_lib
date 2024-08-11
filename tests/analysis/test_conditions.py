@@ -16,13 +16,16 @@ def sample_data_with_none():
     return pd.DataFrame({"a": [None, None, 3], "b": [None, 2, None]})
 
 
-class TestCondition:
+class TestConditionGeneral:
     @pytest.mark.parametrize(
         "condition",
         [
             CheckRelation("z", "<", 2),
             CheckRelation("a", "<", "z"),
             CheckRelation("z", "<", "a"),
+            CheckAllTrue(["y", "x"]),
+            CheckAllTrue(["y"]),
+            CheckAllTrue([]),
         ],
     )
     def test_is_condition_true_invalid_condition(
@@ -33,12 +36,38 @@ class TestCondition:
 
     @pytest.mark.parametrize(
         "condition",
-        [CheckRelation("z", "<", 2)],
+        [
+            CheckRelation("z", "<", 2),
+            CheckAllTrue(["a", "b"]),
+        ],
     )
     def test_is_condition_true_no_data(self, condition: Condition):
         with pytest.raises(ValueError):
             condition.is_condition_true(pd.DataFrame())
 
+    @pytest.mark.parametrize(
+        "condition, expected",
+        [
+            (CheckRelation("a", "<", 2), "a<2"),
+            (CheckRelation("a", ">", 2), "a>2"),
+            (CheckRelation("a", "<=", 2), "a<=2"),
+            (CheckRelation("a", ">=", 2), "a>=2"),
+            (CheckRelation("a", "==", 2), "a==2"),
+            (CheckRelation("a", "<", "b"), "a<b"),
+            (CheckRelation("a", ">", "b"), "a>b"),
+            (CheckRelation("a", "<=", "b"), "a<=b"),
+            (CheckRelation("a", ">=", "b"), "a>=b"),
+            (CheckRelation("a", "==", "b"), "a==b"),
+            (CheckAllTrue(["a", "b"]), "CheckAllTrue=['a', 'b']"),
+        ],
+    )
+    def test_get_name(self, condition: Condition, expected: str):
+        name = condition.get_name()
+
+        assert name == expected
+
+
+class TestCheckRelation:
     @pytest.mark.parametrize(
         "condition, expected",
         [
@@ -100,22 +129,74 @@ class TestCondition:
 
         assert result == expected
 
-    @pytest.mark.parametrize(
-        "condition, expected",
-        [
-            (CheckRelation("a", "<", 2), "a<2"),
-            (CheckRelation("a", ">", 2), "a>2"),
-            (CheckRelation("a", "<=", 2), "a<=2"),
-            (CheckRelation("a", ">=", 2), "a>=2"),
-            (CheckRelation("a", "==", 2), "a==2"),
-            (CheckRelation("a", "<", "b"), "a<b"),
-            (CheckRelation("a", ">", "b"), "a>b"),
-            (CheckRelation("a", "<=", "b"), "a<=b"),
-            (CheckRelation("a", ">=", "b"), "a>=b"),
-            (CheckRelation("a", "==", "b"), "a==b"),
-        ],
-    )
-    def test_get_name(self, condition: Condition, expected: str):
-        name = condition.get_name()
 
-        assert name == expected
+@pytest.fixture
+def sample_conditions():
+    conditions = {
+        "a": [True, True, False],
+        "b": [True, False, False],
+        "c": [True, False, False],
+    }
+    return pd.DataFrame(conditions)
+
+
+@pytest.fixture
+def sample_broken_condition():
+    conditions = {
+        "a": [None, False, True],
+        "b": [True, False, True],
+        "c": [True, False, True],
+    }
+    return pd.DataFrame(conditions)
+
+
+@pytest.fixture
+def sample_extended_conditions():
+    conditions = {
+        "a": [True, True, True],
+        "b": [True, True, True],
+        "c": [True, True, True],
+        "z": ["TEST", False, False],
+    }
+    return pd.DataFrame(conditions)
+
+
+class TestCheckAllTrue:
+    @pytest.mark.parametrize(
+        "signal, expected",
+        [(CheckAllTrue(["a", "b", "c"]), [True, False, False])],
+    )
+    def test_is_condition_true_valid_conditions(
+        self,
+        signal: CheckAllTrue,
+        sample_conditions: pd.DataFrame,
+        expected: List[bool],
+    ):
+        result = signal.is_condition_true(sample_conditions)
+        result = result.tolist()
+
+        assert result == expected
+
+    @pytest.mark.parametrize("signal", [CheckAllTrue(["a", "b", "c"])])
+    def test_is_condition_true_invalid_conditions(
+        self,
+        signal: CheckAllTrue,
+        sample_broken_condition: pd.DataFrame,
+    ):
+        with pytest.raises(TypeError):
+            signal.is_condition_true(sample_broken_condition)
+
+    @pytest.mark.parametrize(
+        "signal, expected",
+        [(CheckAllTrue(["a", "b", "c"]), [True, False, False])],
+    )
+    def test_is_condition_true_only_expected_cols(
+        self,
+        signal: CheckAllTrue,
+        sample_extended_conditions: pd.DataFrame,
+        expected: List[bool],
+    ):
+        result = signal.is_condition_true(sample_extended_conditions)
+        result = result.tolist()
+
+        assert result == expected
