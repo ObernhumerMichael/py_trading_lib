@@ -137,20 +137,15 @@ class CheckAllTrue(Condition):
         self._check_conditions_empty()
         sanity.check_cols_exist_in_df(self._conditions, data)
 
-        needed_data = self._select_only_needed_cols(data)
+        needed_data = utils.select_only_needed_cols(self._conditions, data)
         sanity.check_contains_only_bools(needed_data)
 
     def _check_conditions_empty(self) -> None:
         if len(self._conditions) == 0:
             raise ValueError("The there must be at least one condition to be checked.")
 
-    def _select_only_needed_cols(self, df: pd.DataFrame) -> pd.DataFrame:
-        selection = df[self._conditions]
-        selection = utils.convert_to_df_from_sr_or_df(selection)
-        return selection
-
     def _calculate(self, data: pd.DataFrame) -> pd.Series:
-        data_to_calc = self._select_only_needed_cols(data)
+        data_to_calc = utils.select_only_needed_cols(self._conditions, data)
         signal = data_to_calc.all(axis=1)
         signal = self._validate(signal)
         return signal

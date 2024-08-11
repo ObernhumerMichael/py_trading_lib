@@ -1,4 +1,4 @@
-from typing import Union, Any
+from typing import Union, Any, List
 
 import pandas as pd
 
@@ -18,3 +18,9 @@ def convert_to_df_from_sr_or_df(
 
 def is_series_or_dataframe(var: Any) -> bool:
     return isinstance(var, pd.DataFrame) or isinstance(var, pd.Series)
+
+
+def select_only_needed_cols(cols: List[str], df: pd.DataFrame) -> pd.DataFrame:
+    selection = df[cols]
+    selection = convert_to_df_from_sr_or_df(selection)
+    return selection

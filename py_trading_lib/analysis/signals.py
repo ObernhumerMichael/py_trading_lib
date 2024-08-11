@@ -24,7 +24,7 @@ class Signal(ABC):
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
         sanity.check_not_empty(data)
         sanity.check_cols_exist_in_df(self._conditions, data)
-        needed_data = self._select_only_needed_cols(data)
+        needed_data = utils.select_only_needed_cols(self._conditions, data)
         sanity.check_contains_only_bools(needed_data)
 
     def _try_calculate(self, data) -> pd.Series:
@@ -37,11 +37,6 @@ class Signal(ABC):
             ) from e
 
         return signal
-
-    def _select_only_needed_cols(self, df: pd.DataFrame) -> pd.DataFrame:
-        selection = df[self._conditions]
-        selection = utils.convert_to_df_from_sr_or_df(selection)
-        return selection
 
     @abstractmethod
     def _calculate(self, data: pd.DataFrame) -> pd.Series:
