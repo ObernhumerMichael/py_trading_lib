@@ -65,7 +65,7 @@ class Analysis:
 
     def _calculate_conditions(self, analysis_data: pd.DataFrame) -> pd.DataFrame:
         conditions = [
-            condition.is_condition_true(analysis_data) for condition in self._conditions
+            condition.calculate(analysis_data) for condition in self._conditions
         ]
         return pd.concat([analysis_data] + conditions, axis=1)
 

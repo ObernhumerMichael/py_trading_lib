@@ -5,6 +5,7 @@ import pandas as pd
 
 import py_trading_lib.utils.sanity_checks as sanity
 import py_trading_lib.utils.utils as utils
+from py_trading_lib.analysis.conditions import CheckAllTrue
 
 __all__ = ["Signal", "SignalAllConditionsTrue"]
 
@@ -17,7 +18,7 @@ class Signal(ABC):
     def calculate_signal(self, data: pd.DataFrame) -> pd.Series:
         self._perform_sanity_checks(data)
         data = self._select_only_needed_cols(data)
-        signal = self._try_calculate_signal(data)
+        signal = self._try_calculate(data)
         return signal
 
     @abstractmethod
@@ -32,9 +33,9 @@ class Signal(ABC):
         selection = utils.convert_to_df_from_sr_or_df(selection)
         return selection
 
-    def _try_calculate_signal(self, data) -> pd.Series:
+    def _try_calculate(self, data) -> pd.Series:
         try:
-            signal = self._calculate_signal(data)
+            signal = self._calculate(data)
             signal.name = self.get_name()
         except Exception as e:
             raise RuntimeError(
@@ -44,7 +45,7 @@ class Signal(ABC):
         return signal
 
     @abstractmethod
-    def _calculate_signal(self, data: pd.DataFrame) -> pd.Series:
+    def _calculate(self, data: pd.DataFrame) -> pd.Series:
         pass
 
     @abstractmethod
@@ -52,22 +53,15 @@ class Signal(ABC):
         pass
 
 
-class SignalAllConditionsTrue(Signal):
+class SignalAllConditionsTrue(CheckAllTrue, Signal):
     def __init__(self, conditions: List[str]):
         super().__init__(conditions)
 
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
         return super()._perform_sanity_checks(data)
 
-    def _calculate_signal(self, data: pd.DataFrame) -> pd.Series:
-        signal = data.all(axis=1)
-        return self._validate(signal)
-
-    def _validate(self, signal: pd.Series | bool) -> pd.Series:
-        if isinstance(signal, pd.Series):
-            return signal
-        else:
-            raise TypeError("The calculted signal is not a pandas Series.")
+    def _calculate(self, data: pd.DataFrame) -> pd.Series:
+        return super().calculate(data)
 
     def get_name(self) -> str:
         return "SignalAllConditionsTrue"
