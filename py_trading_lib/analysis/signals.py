@@ -15,9 +15,8 @@ class Signal(ABC):
     def __init__(self, conditions: List[str]):
         self._conditions = conditions
 
-    def calculate_signal(self, data: pd.DataFrame) -> pd.Series:
+    def calculate(self, data: pd.DataFrame) -> pd.Series:
         self._perform_sanity_checks(data)
-        data = self._select_only_needed_cols(data)
         signal = self._try_calculate(data)
         return signal
 
@@ -28,13 +27,9 @@ class Signal(ABC):
         data = self._select_only_needed_cols(data)
         sanity.check_contains_only_bools(data)
 
-    def _select_only_needed_cols(self, df: pd.DataFrame) -> pd.DataFrame:
-        selection = df[self._conditions]
-        selection = utils.convert_to_df_from_sr_or_df(selection)
-        return selection
-
     def _try_calculate(self, data) -> pd.Series:
         try:
+            data = self._select_only_needed_cols(data)
             signal = self._calculate(data)
             signal.name = self.get_name()
         except Exception as e:
@@ -43,6 +38,11 @@ class Signal(ABC):
             ) from e
 
         return signal
+
+    def _select_only_needed_cols(self, df: pd.DataFrame) -> pd.DataFrame:
+        selection = df[self._conditions]
+        selection = utils.convert_to_df_from_sr_or_df(selection)
+        return selection
 
     @abstractmethod
     def _calculate(self, data: pd.DataFrame) -> pd.Series:
@@ -53,7 +53,7 @@ class Signal(ABC):
         pass
 
 
-class SignalAllConditionsTrue(CheckAllTrue, Signal):
+class SignalAllConditionsTrue(Signal):
     def __init__(self, conditions: List[str]):
         super().__init__(conditions)
 
@@ -61,8 +61,9 @@ class SignalAllConditionsTrue(CheckAllTrue, Signal):
         return super()._perform_sanity_checks(data)
 
     def _calculate(self, data: pd.DataFrame) -> pd.Series:
-        raise NotImplementedError
-        return super().calculate(data)
+        condition = CheckAllTrue(self._conditions)
+        signal = condition._calculate(data)
+        return signal
 
     def get_name(self) -> str:
         return "SignalAllConditionsTrue"

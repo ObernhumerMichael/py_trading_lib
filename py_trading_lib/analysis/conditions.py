@@ -28,8 +28,8 @@ class Condition(ABC):
             condition = self._calculate(data)
         except Exception as e:
             raise RuntimeError(
-                f"Something went wrong during the calculation of the condition: {self.get_name()}. {e}"
-            )
+                f"Something went wrong during the calculation of the condition: {self.get_name()}."
+            ) from e
 
         return condition
 

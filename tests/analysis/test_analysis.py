@@ -93,4 +93,4 @@ class TestAnalysis:
         ]
         columns = analysis_data.columns.tolist()
 
-        assert expected_cols == columns
+        assert columns == expected_cols

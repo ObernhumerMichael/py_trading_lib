@@ -70,5 +70,5 @@ class Analysis:
         return pd.concat([analysis_data] + conditions, axis=1)
 
     def _calculate_signal(self, analysis_data: pd.DataFrame) -> pd.DataFrame:
-        signal = self._signal.calculate_signal(analysis_data)
+        signal = self._signal.calculate(analysis_data)
         return pd.concat([analysis_data, signal], axis=1)
