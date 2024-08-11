@@ -61,6 +61,7 @@ class SignalAllConditionsTrue(CheckAllTrue, Signal):
         return super()._perform_sanity_checks(data)
 
     def _calculate(self, data: pd.DataFrame) -> pd.Series:
+        raise NotImplementedError
         return super().calculate(data)
 
     def get_name(self) -> str:
