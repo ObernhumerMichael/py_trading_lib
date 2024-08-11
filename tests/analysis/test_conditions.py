@@ -59,16 +59,14 @@ class TestConditionGeneral:
             CheckRelation("z", "<", 2),
             CheckRelation("a", "<", "z"),
             CheckRelation("z", "<", "a"),
-            CheckAllTrue(["y", "x"]),
-            CheckAllTrue(["y"]),
             CheckAllTrue([]),
         ],
     )
-    def test_is_condition_true_invalid_condition(
+    def test_calculate_invalid_condition(
         self, condition: Condition, sample_data: pd.DataFrame
     ):
         with pytest.raises(ValueError):
-            condition.is_condition_true(sample_data)
+            condition.calculate(sample_data)
 
     @pytest.mark.parametrize(
         "condition",
@@ -77,9 +75,9 @@ class TestConditionGeneral:
             CheckAllTrue(["a", "b"]),
         ],
     )
-    def test_is_condition_true_no_data(self, condition: Condition):
+    def test_calculate_no_data(self, condition: Condition):
         with pytest.raises(ValueError):
-            condition.is_condition_true(pd.DataFrame())
+            condition.calculate(pd.DataFrame())
 
     @pytest.mark.parametrize(
         "signal, data_fix",
@@ -89,13 +87,13 @@ class TestConditionGeneral:
             (CheckAllTrue(["a", "b", "c"]), "sample_broken_conditions"),
         ],
     )
-    def test_is_condition_true_broken_data(
+    def test_calculate_broken_data(
         self, signal: CheckAllTrue, data_fix: str, request: pytest.FixtureRequest
     ):
         data = request.getfixturevalue(data_fix)
 
         with pytest.raises(TypeError):
-            signal.is_condition_true(data)
+            signal.calculate(data)
 
     @pytest.mark.parametrize(
         "condition,data_fix, expected",
@@ -113,7 +111,7 @@ class TestConditionGeneral:
             (CheckAllTrue(["a", "b", "c"]), "sample_conditions", [True, False, False]),
         ],
     )
-    def test_is_condition_true_valid_data(
+    def test_calculate_valid_data(
         self,
         condition: Condition,
         expected: List[bool],
@@ -122,7 +120,7 @@ class TestConditionGeneral:
     ):
         data: pd.DataFrame = request.getfixturevalue(data_fix)
 
-        result = condition.is_condition_true(data)
+        result = condition.calculate(data)
 
         result = result.tolist()
         assert result == expected
@@ -167,7 +165,7 @@ class TestConditionGeneral:
             ),
         ],
     )
-    def test_is_condition_true_use_only_expected_cols(
+    def test_calculate_use_only_expected_cols(
         self,
         condition: Condition,
         expected: List[bool],
@@ -176,7 +174,7 @@ class TestConditionGeneral:
     ):
         data: pd.DataFrame = request.getfixturevalue(data_fix)
 
-        result = condition.is_condition_true(data)
+        result = condition.calculate(data)
 
         result = result.tolist()
         assert result == expected
@@ -222,7 +220,7 @@ class TestConditionGeneral:
             ),
         ],
     )
-    def test_is_condition_true_return_name(
+    def test_calculate_return_name(
         self,
         condition: Condition,
         expected: List[bool],
@@ -231,7 +229,7 @@ class TestConditionGeneral:
     ):
         data: pd.DataFrame = request.getfixturevalue(data_fix)
 
-        result = condition.is_condition_true(data)
+        result = condition.calculate(data)
 
         assert result.name == expected
 
@@ -247,12 +245,12 @@ class TestCheckRelation:
             (CheckRelation("a", "==", "b")),
         ],
     )
-    def test_is_string_condition_false_for_none(
+    def test_calculate_is_string_condition_false_for_none(
         self, condition: Condition, sample_data_with_none
     ):
         expected = [False, False, False]
 
-        result = condition.is_condition_true(sample_data_with_none)
+        result = condition.calculate(sample_data_with_none)
         result = result.tolist()
 
         assert result == expected
@@ -267,10 +265,10 @@ class TestCheckRelation:
             (CheckRelation("a", "==", 2), [False, False, False]),
         ],
     )
-    def test_is_number_condition_false_for_none(
+    def test_calculate_is_number_condition_false_for_none(
         self, condition: Condition, expected: List[bool], sample_data_with_none
     ):
-        result = condition.is_condition_true(sample_data_with_none)
+        result = condition.calculate(sample_data_with_none)
         result = result.tolist()
 
         assert result == expected

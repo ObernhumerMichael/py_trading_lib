@@ -18,7 +18,7 @@ class Signal(ABC):
     def calculate_signal(self, data: pd.DataFrame) -> pd.Series:
         self._perform_sanity_checks(data)
         data = self._select_only_needed_cols(data)
-        signal = self._try_calculate_signal(data)
+        signal = self._try_calculate(data)
         return signal
 
     @abstractmethod
@@ -33,9 +33,9 @@ class Signal(ABC):
         selection = utils.convert_to_df_from_sr_or_df(selection)
         return selection
 
-    def _try_calculate_signal(self, data) -> pd.Series:
+    def _try_calculate(self, data) -> pd.Series:
         try:
-            signal = self._calculate_signal(data)
+            signal = self._calculate(data)
             signal.name = self.get_name()
         except Exception as e:
             raise RuntimeError(
@@ -45,7 +45,7 @@ class Signal(ABC):
         return signal
 
     @abstractmethod
-    def _calculate_signal(self, data: pd.DataFrame) -> pd.Series:
+    def _calculate(self, data: pd.DataFrame) -> pd.Series:
         pass
 
     @abstractmethod
@@ -53,15 +53,15 @@ class Signal(ABC):
         pass
 
 
-class SignalAllConditionsTrue(Signal, CheckAllTrue):
+class SignalAllConditionsTrue(CheckAllTrue, Signal):
     def __init__(self, conditions: List[str]):
         super().__init__(conditions)
 
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
-        return super()._perform_sanity_checks(data)  # from Signal class
+        return super()._perform_sanity_checks(data)
 
-    def _calculate_signal(self, data: pd.DataFrame) -> pd.Series:
-        return super().is_condition_true(data)
+    def _calculate(self, data: pd.DataFrame) -> pd.Series:
+        return super().calculate(data)
 
     def get_name(self) -> str:
         return "SignalAllConditionsTrue"

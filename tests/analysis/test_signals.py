@@ -66,7 +66,7 @@ class TestSignals:
         expected: List[bool],
         request: pytest.FixtureRequest,
     ):
-        signal = request.getfixturevalue(signal_fix)
+        signal: Signal = request.getfixturevalue(signal_fix)
 
         result = signal.calculate_signal(sample_conditions)
         result = result.tolist()
@@ -83,7 +83,7 @@ class TestSignals:
         sample_broken_condition: pd.DataFrame,
         request: pytest.FixtureRequest,
     ):
-        signal = request.getfixturevalue(signal_fix)
+        signal: Signal = request.getfixturevalue(signal_fix)
 
         with pytest.raises(TypeError):
             signal.calculate_signal(sample_broken_condition)
@@ -99,7 +99,7 @@ class TestSignals:
         sample_extended_conditions: pd.DataFrame,
         request: pytest.FixtureRequest,
     ):
-        signal = request.getfixturevalue(signal_fix)
+        signal: Signal = request.getfixturevalue(signal_fix)
 
         result = signal.calculate_signal(sample_extended_conditions)
         result = result.tolist()

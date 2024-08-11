@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Literal, TypeAlias, Union, Callable, List
 
-from numpy import sign
 import pandas as pd
 
 import py_trading_lib.utils.sanity_checks as sanity
@@ -19,7 +18,7 @@ class Condition(ABC):
         sanity.check_not_empty(data)
 
     @abstractmethod
-    def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
+    def calculate(self, data: pd.DataFrame) -> pd.Series:
         pass
 
     @abstractmethod
@@ -39,9 +38,9 @@ class CheckRelation(Condition):
         elif isinstance(comparison_value, str):
             self.relation = _StringRelation(indicator_name, operator, comparison_value)
 
-    def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
+    def calculate(self, data: pd.DataFrame) -> pd.Series:
         self._perform_sanity_checks(data)
-        return self.relation.is_condition_true(data)
+        return self.relation.calculate(data)
 
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
         super()._perform_sanity_checks(data)
@@ -88,7 +87,7 @@ class _Relation:
 
 
 class _NumericRelation(_Relation, Condition):
-    def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
+    def calculate(self, data: pd.DataFrame) -> pd.Series:
         result: pd.Series = self.check_relation(
             data[self.indicator_name], self.comparison_value
         )
@@ -101,7 +100,7 @@ class _NumericRelation(_Relation, Condition):
 
 
 class _StringRelation(_Relation, Condition):
-    def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
+    def calculate(self, data: pd.DataFrame) -> pd.Series:
         result: pd.Series = self.check_relation(
             data[self.indicator_name], data[self.comparison_value]
         )
@@ -125,15 +124,15 @@ class CheckAllTrue(Condition):
         sanity.check_contains_only_bools(data)
 
     def _check_conditions_empty(self) -> None:
-        if len(self._conditions) < 2:
-            raise ValueError("The there must be at least two conditions to be checked")
+        if len(self._conditions) == 0:
+            raise ValueError("The there must be at least one condition to be checked.")
 
     def _select_only_needed_cols(self, df: pd.DataFrame) -> pd.DataFrame:
         selection = df[self._conditions]
         selection = utils.convert_to_df_from_sr_or_df(selection)
         return selection
 
-    def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
+    def calculate(self, data: pd.DataFrame) -> pd.Series:
         self._perform_sanity_checks(data)
         signal = data.all(axis=1)
         signal = self._validate(signal)

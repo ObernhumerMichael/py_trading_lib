@@ -27,8 +27,8 @@ class TechnicalIndicator(ABC):
             indicator = self._calculate_indicator(klines)
         except Exception as e:
             raise RuntimeError(
-                f"Something went wrong during the calculation of the indicator: {self.get_names()}"
-            ) from e
+                f"Something went wrong during the calculation of the indicator: {self.get_names()}. {e}"
+            )
 
         return indicator
 
