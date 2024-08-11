@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Literal, TypeAlias, Union, Callable, List
 
+from numpy import sign
 import pandas as pd
 
 import py_trading_lib.utils.sanity_checks as sanity
@@ -135,7 +136,9 @@ class CheckAllTrue(Condition):
     def is_condition_true(self, data: pd.DataFrame) -> pd.Series:
         self._perform_sanity_checks(data)
         signal = data.all(axis=1)
-        return self._validate(signal)
+        signal = self._validate(signal)
+        signal.name = self.get_name()
+        return signal
 
     def _validate(self, signal: pd.Series | bool) -> pd.Series:
         if isinstance(signal, pd.Series):

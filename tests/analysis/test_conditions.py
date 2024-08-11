@@ -110,6 +110,7 @@ class TestConditionGeneral:
             (CheckRelation("a", "<=", "b"), "sample_data", [True, True, False]),
             (CheckRelation("a", ">=", "b"), "sample_data", [False, True, True]),
             (CheckRelation("a", "==", "b"), "sample_data", [False, True, False]),
+            (CheckAllTrue(["a", "b", "c"]), "sample_conditions", [True, False, False]),
         ],
     )
     def test_is_condition_true_valid_data(
@@ -200,6 +201,39 @@ class TestConditionGeneral:
         name = condition.get_name()
 
         assert name == expected
+
+    @pytest.mark.parametrize(
+        "condition,data_fix, expected",
+        [
+            (CheckRelation("a", "<", 2), "sample_data", "a<2"),
+            (CheckRelation("a", ">", 2), "sample_data", "a>2"),
+            (CheckRelation("a", "<=", 2), "sample_data", "a<=2"),
+            (CheckRelation("a", ">=", 2), "sample_data", "a>=2"),
+            (CheckRelation("a", "==", 2), "sample_data", "a==2"),
+            (CheckRelation("a", "<", "b"), "sample_data", "a<b"),
+            (CheckRelation("a", ">", "b"), "sample_data", "a>b"),
+            (CheckRelation("a", "<=", "b"), "sample_data", "a<=b"),
+            (CheckRelation("a", ">=", "b"), "sample_data", "a>=b"),
+            (CheckRelation("a", "==", "b"), "sample_data", "a==b"),
+            (
+                CheckAllTrue(["a", "b"]),
+                "sample_conditions",
+                "CheckAllTrue=['a', 'b']",
+            ),
+        ],
+    )
+    def test_is_condition_true_return_name(
+        self,
+        condition: Condition,
+        expected: List[bool],
+        data_fix: str,
+        request: pytest.FixtureRequest,
+    ):
+        data: pd.DataFrame = request.getfixturevalue(data_fix)
+
+        result = condition.is_condition_true(data)
+
+        assert result.name == expected
 
 
 class TestCheckRelation:
