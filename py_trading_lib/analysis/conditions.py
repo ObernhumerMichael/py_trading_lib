@@ -43,7 +43,13 @@ class CheckRelation(Condition):
         return self.relation.is_condition_true(data)
 
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
+        super()._perform_sanity_checks(data)
         self.relation._perform_sanity_checks(data)
+        self._check_contains_only_numbers_and_nans(data)
+
+    def _check_contains_only_numbers_and_nans(self, data: pd.DataFrame):
+        nan_free_data = data.dropna()
+        sanity.check_contains_only_numbers(nan_free_data)
 
     def get_name(self) -> str:
         return self.relation.get_name()
@@ -89,7 +95,6 @@ class _NumericRelation(_Relation, Condition):
         return result
 
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
-        super()._perform_sanity_checks(data)
         indicator = [self.indicator_name]
         sanity.check_cols_exist_in_df(indicator, data)
 
@@ -103,7 +108,6 @@ class _StringRelation(_Relation, Condition):
         return result
 
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
-        super()._perform_sanity_checks(data)
         indicators = [self.indicator_name, self.comparison_value]
         sanity.check_cols_exist_in_df(indicators, data)
 
