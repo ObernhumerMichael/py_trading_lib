@@ -203,7 +203,7 @@ class TestConditionGeneral:
         assert name == expected
 
     @pytest.mark.parametrize(
-        "condition,data_fix, expected",
+        "condition, data_fix, expected",
         [
             (CheckRelation("a", "<", 2), "sample_data", "a<2"),
             (CheckRelation("a", ">", 2), "sample_data", "a>2"),

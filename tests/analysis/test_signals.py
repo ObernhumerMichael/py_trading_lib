@@ -105,3 +105,37 @@ class TestSignals:
         result = result.tolist()
 
         assert result == expected
+
+    @pytest.mark.parametrize(
+        "signal, expected",
+        [
+            (SignalAllConditionsTrue(["a", "b"]), "SignalAllConditionsTrue"),
+        ],
+    )
+    def test_get_name(self, signal: Signal, expected: str):
+        name = signal.get_name()
+
+        assert name == expected
+
+    @pytest.mark.parametrize(
+        "condition, data_fix, expected",
+        [
+            (
+                SignalAllConditionsTrue(["a", "b"]),
+                "sample_conditions",
+                "SignalAllConditionsTrue",
+            ),
+        ],
+    )
+    def test_is_condition_true_return_name(
+        self,
+        condition: Signal,
+        expected: List[bool],
+        data_fix: str,
+        request: pytest.FixtureRequest,
+    ):
+        data: pd.DataFrame = request.getfixturevalue(data_fix)
+
+        result = condition.calculate_signal(data)
+
+        assert result.name == expected
