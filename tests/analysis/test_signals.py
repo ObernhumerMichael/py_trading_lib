@@ -46,14 +46,14 @@ class TestSignals:
     @pytest.mark.parametrize("signal", [SignalAllConditionsTrue(["a"])])
     def test_calculate_signal_empty_conditions(self, signal: Signal):
         with pytest.raises(ValueError):
-            signal.calculate_signal(pd.DataFrame())
+            signal.calculate(pd.DataFrame())
 
     @pytest.mark.parametrize("signal", [SignalAllConditionsTrue(["z"])])
     def test_calculate_signal_incomplete_data(
         self, signal: Signal, sample_conditions: pd.DataFrame
     ):
         with pytest.raises(ValueError):
-            signal.calculate_signal(sample_conditions)
+            signal.calculate(sample_conditions)
 
     @pytest.mark.parametrize(
         "signal_fix, expected",
@@ -68,7 +68,7 @@ class TestSignals:
     ):
         signal: Signal = request.getfixturevalue(signal_fix)
 
-        result = signal.calculate_signal(sample_conditions)
+        result = signal.calculate(sample_conditions)
         result = result.tolist()
 
         assert result == expected
@@ -86,7 +86,7 @@ class TestSignals:
         signal: Signal = request.getfixturevalue(signal_fix)
 
         with pytest.raises(TypeError):
-            signal.calculate_signal(sample_broken_condition)
+            signal.calculate(sample_broken_condition)
 
     @pytest.mark.parametrize(
         "signal_fix, expected",
@@ -101,7 +101,7 @@ class TestSignals:
     ):
         signal: Signal = request.getfixturevalue(signal_fix)
 
-        result = signal.calculate_signal(sample_extended_conditions)
+        result = signal.calculate(sample_extended_conditions)
         result = result.tolist()
 
         assert result == expected
@@ -136,6 +136,6 @@ class TestSignals:
     ):
         data: pd.DataFrame = request.getfixturevalue(data_fix)
 
-        result = condition.calculate_signal(data)
+        result = condition.calculate(data)
 
         assert result.name == expected

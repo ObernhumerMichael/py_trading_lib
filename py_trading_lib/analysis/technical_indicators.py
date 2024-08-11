@@ -56,7 +56,8 @@ class SMA(TechnicalIndicator):
             length=self._length,
             offset=self._offset,
         )
-        return utils.convert_to_df_from_sr_or_df(sma)
+        sma = utils.convert_to_df_from_sr_or_df(sma)
+        return sma
 
     def get_min_len(self) -> int:
         return self._length
@@ -85,7 +86,8 @@ class RSI(TechnicalIndicator):
             drift=self._drift,
             offset=self._offset,
         )
-        return utils.convert_to_df_from_sr_or_df(rsi)
+        rsi = utils.convert_to_df_from_sr_or_df(rsi)
+        return rsi
 
     def get_min_len(self) -> int:
         return self._length

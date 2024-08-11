@@ -13,12 +13,28 @@ __all__ = ["Condition", "CheckRelation", "CheckAllTrue"]
 
 
 class Condition(ABC):
+    def calculate(self, data: pd.DataFrame) -> pd.Series:
+        self._perform_sanity_checks(data)
+        condition = self._try_calculate(data)
+        return condition
+
     @abstractmethod
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
         sanity.check_not_empty(data)
 
+    def _try_calculate(self, data: pd.DataFrame) -> pd.Series:
+        try:
+            condition = self._calculate(data)
+            condition.name = self.get_name()
+        except Exception as e:
+            raise RuntimeError(
+                f"Something went wrong during the calculation of the condition: {self.get_name()}."
+            ) from e
+
+        return condition
+
     @abstractmethod
-    def calculate(self, data: pd.DataFrame) -> pd.Series:
+    def _calculate(self, data: pd.DataFrame) -> pd.Series:
         pass
 
     @abstractmethod
@@ -38,9 +54,8 @@ class CheckRelation(Condition):
         elif isinstance(comparison_value, str):
             self.relation = _StringRelation(indicator_name, operator, comparison_value)
 
-    def calculate(self, data: pd.DataFrame) -> pd.Series:
-        self._perform_sanity_checks(data)
-        return self.relation.calculate(data)
+    def _calculate(self, data: pd.DataFrame) -> pd.Series:
+        return self.relation._calculate(data)
 
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
         super()._perform_sanity_checks(data)
@@ -87,7 +102,7 @@ class _Relation:
 
 
 class _NumericRelation(_Relation, Condition):
-    def calculate(self, data: pd.DataFrame) -> pd.Series:
+    def _calculate(self, data: pd.DataFrame) -> pd.Series:
         result: pd.Series = self.check_relation(
             data[self.indicator_name], self.comparison_value
         )
@@ -100,7 +115,7 @@ class _NumericRelation(_Relation, Condition):
 
 
 class _StringRelation(_Relation, Condition):
-    def calculate(self, data: pd.DataFrame) -> pd.Series:
+    def _calculate(self, data: pd.DataFrame) -> pd.Series:
         result: pd.Series = self.check_relation(
             data[self.indicator_name], data[self.comparison_value]
         )
@@ -118,10 +133,12 @@ class CheckAllTrue(Condition):
 
     def _perform_sanity_checks(self, data: pd.DataFrame) -> None:
         super()._perform_sanity_checks(data)
+
         self._check_conditions_empty()
         sanity.check_cols_exist_in_df(self._conditions, data)
-        data = self._select_only_needed_cols(data)
-        sanity.check_contains_only_bools(data)
+
+        needed_data = self._select_only_needed_cols(data)
+        sanity.check_contains_only_bools(needed_data)
 
     def _check_conditions_empty(self) -> None:
         if len(self._conditions) == 0:
@@ -132,11 +149,10 @@ class CheckAllTrue(Condition):
         selection = utils.convert_to_df_from_sr_or_df(selection)
         return selection
 
-    def calculate(self, data: pd.DataFrame) -> pd.Series:
-        self._perform_sanity_checks(data)
-        signal = data.all(axis=1)
+    def _calculate(self, data: pd.DataFrame) -> pd.Series:
+        data_to_calc = self._select_only_needed_cols(data)
+        signal = data_to_calc.all(axis=1)
         signal = self._validate(signal)
-        signal.name = self.get_name()
         return signal
 
     def _validate(self, signal: pd.Series | bool) -> pd.Series:
