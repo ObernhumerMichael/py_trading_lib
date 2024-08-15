@@ -10,8 +10,8 @@ def example_analysis():
     analysis = Analysis()
 
     sma = analysis.add_ti(SMA(2))[0]
-    relation = analysis.add_condition(CheckRelation(sma, ">", 2))
-    analysis.set_signal(SignalAllConditionsTrue([relation]))
+    check_relation = analysis.add_condition(CheckRelation(sma, ">", 2))
+    analysis.add_condition(CheckAllTrue([check_relation]))
 
     return analysis
 
@@ -30,6 +30,13 @@ def example_tohclv():
 
 
 class TestAnalysis:
+    def test_add_ti(self):
+        analysis = Analysis()
+
+        analysis.add_ti(SMA(10))
+
+        assert len(analysis._technical_indicators) == 1
+
     def test_add_ti_return_name(self):
         analysis = Analysis()
         sma = SMA(10)
@@ -39,12 +46,12 @@ class TestAnalysis:
 
         assert name == expected
 
-    def test_add_ti_list(self):
+    def test_add_condition(self):
         analysis = Analysis()
 
-        analysis.add_ti(SMA(10))
+        analysis.add_condition(CheckAllTrue(["a"]))
 
-        assert len(analysis._technical_indicators) == 1
+        assert len(analysis._conditions) == 1
 
     def test_add_condition_return_name(self):
         analysis = Analysis()
@@ -55,31 +62,9 @@ class TestAnalysis:
 
         assert name == expected
 
-    def test_add_signal_list(self):
-        analysis = Analysis()
-        signal = SignalAllConditionsTrue(["a"])
-
-        analysis.set_signal(signal)
-
-        assert analysis._signal is signal
-
-    def test_calculate_signal_no_tohclv(
-        self, example_analysis: Analysis, not_kline_data: pd.DataFrame
-    ):
-        with pytest.raises(ValueError):
-            example_analysis.calculate_signal(not_kline_data)
-
-    def test_calculate_signal(
-        self, example_analysis: Analysis, example_tohclv: pd.DataFrame
-    ):
-        result = example_analysis.calculate_signal(example_tohclv)
-
-        assert result.tolist() == [False, False, True, True]
-
     def test_calculate_analysis_data_cols(
         self, example_analysis: Analysis, example_tohclv: pd.DataFrame
     ):
-        analysis_data = example_analysis.calculate_analysis_data(example_tohclv)
         expected_cols = [
             "TIME",
             "OPEN",
@@ -89,8 +74,11 @@ class TestAnalysis:
             "VOLUME",
             "SMA_2",
             "SMA_2>2",
-            "SignalAllConditionsTrue",
+            "CheckAllTrue=['SMA_2>2']",
         ]
+
+        analysis_data = example_analysis.calculate_analysis_data(example_tohclv)
         columns = analysis_data.columns.tolist()
+        print(columns)
 
         assert columns == expected_cols
