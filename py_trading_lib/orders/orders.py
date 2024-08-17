@@ -1,38 +1,28 @@
-from abc import ABC
-from copy import deepcopy
-
-import pandas as pd
-
-__all__ = ["Order", "OrderLongOpen", "OrderLongClose", "OrderGenerator"]
+from abc import ABC, abstractmethod
+from typing import Literal
 
 
 class Order(ABC):
-    pass
-
-
-class OrderLongOpen(Order):
-    pass
-
-
-class OrderLongClose(Order):
-    pass
-
-
-class OrderGenerator:
+    @abstractmethod
     def __init__(
-        self,
-        signal: pd.Series,
-        order: Order,
+        self, symbol: str, amount: float, side: Literal["buy", "sell"]
     ) -> None:
-        self._signal = signal
-        self._order = order
+        self._symbol = symbol
+        self._amount = amount
+        self._side = side
 
-    def generate(self) -> pd.Series:
-        positions = self._signal.apply(lambda x: deepcopy(self._order) if x else None)
+    @abstractmethod
+    def place_on_exchange(self, exchange):
+        raise NotImplementedError
 
-        if isinstance(positions, pd.Series):
-            return positions
-        else:
-            raise TypeError(
-                "Something went wrong during the calculation of the positions."
-            )
+    @abstractmethod
+    def backtest(self):
+        raise NotImplementedError
+
+
+class OrderSpot(Order):
+    pass
+
+
+class OrderSpotMarket(OrderSpot):
+    pass
