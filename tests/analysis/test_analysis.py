@@ -81,3 +81,16 @@ class TestAnalysis:
         columns = analysis_data.columns.tolist()
 
         assert columns == expected_cols
+
+    def test_get_min_len_pass(self, example_analysis: Analysis):
+        expected = 2
+
+        min_len = example_analysis.get_min_len()
+
+        assert min_len == expected
+
+    def test_get_min_len_not_configured(self):
+        analysis = Analysis()
+
+        with pytest.raises(ValueError):
+            analysis.get_min_len()
