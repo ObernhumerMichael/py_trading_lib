@@ -27,13 +27,9 @@ class Analysis:
 
     def _check_correct_setup(self) -> None:
         if not self._technical_indicators:
-            raise ValueError(
-                "A TechnicalIndicator must be set otherwise no signal can be generated."
-            )
+            raise ValueError("A TechnicalIndicator must be set.")
         if not self._conditions:
-            raise ValueError(
-                "A Condition must be set otherwise no signal can be generated."
-            )
+            raise ValueError("A Condition must be set.")
 
     def calculate_analysis_data(self, tohlcv: pd.DataFrame) -> pd.DataFrame:
         self._perform_sanity_checks(tohlcv)
@@ -52,3 +48,13 @@ class Analysis:
             condition_result = condition.calculate(analysis_data)
             analysis_data = pd.concat([analysis_data, condition_result], axis=1)
         return analysis_data
+
+    def get_min_len(self) -> int:
+        self._check_correct_setup()
+
+        min_len = 0
+        for ti in self._technical_indicators:
+            ti_len = ti.get_min_len()
+            if min_len < ti_len:
+                min_len = ti_len
+        return min_len
