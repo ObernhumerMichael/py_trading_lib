@@ -79,6 +79,5 @@ class TestAnalysis:
 
         analysis_data = example_analysis.calculate_analysis_data(example_tohclv)
         columns = analysis_data.columns.tolist()
-        print(columns)
 
         assert columns == expected_cols
