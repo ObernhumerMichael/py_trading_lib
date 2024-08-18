@@ -23,30 +23,49 @@ class Strategy(ABC):
     def execute_orders(self):
         pass
 
+    @abstractmethod
+    def _perform_sanity_checks(self):
+        pass
+
 
 class BacktestingStrategy(Strategy):
     def execute_orders(self):
         raise NotImplementedError
 
+    def _perform_sanity_checks(self):
+        raise NotImplementedError
+
     def _map_orders_to_signals(self, analysis_data: pd.DataFrame) -> pd.DataFrame:
-        single_maps: List[pd.Series] = []
+        mapp = {}
+        signals: List[str] = []
+        for signal, order in self._orders:
+            replace = {False: None, True: order}
+            mapp[signal] = replace
+            signals.append(signal)
+
+        data_to_map = analysis_data[signals]
+        data_to_map = utils.convert_to_df_from_sr_or_df(data_to_map)
+
+        mapped_orders = data_to_map.replace(mapp)
 
         for signal, order in self._orders:
-            signal_col = analysis_data[signal]
-            signal_col = utils.type_check_is_series(signal_col)
+            mapped_orders.rename(
+                columns={signal: f"{signal}|{order._symbol}({order._side})"},
+                inplace=True,
+            )
 
-            mapp = signal_col.apply(lambda x: deepcopy(order) if x else None)
-            mapp = utils.type_check_is_series(mapp)
-
-            mapp.name = f"{signal}|{order._symbol}({order._side})"
-            single_maps.append(mapp)
-
-        mapped_orders = pd.concat(single_maps, axis=1)
         return mapped_orders
+
+    @abstractmethod
+    def _linearize_mapped_orders(self, mapped_orders: pd.DataFrame) -> pd.Series:
+        pass
 
 
 class LiveTradingStrategy(Strategy):
     def execute_orders(self):
+        raise NotImplementedError
+
+    def _perform_sanity_checks(self):
         raise NotImplementedError
 
 
@@ -63,6 +82,9 @@ class StrategyAlternatingBacktest(BacktestingStrategy, StrategyAlternating):
     def add_order(self, signal: str, order: Order) -> None:
         self._check_max_orders_reached(self._orders)
         return super().add_order(signal, order)
+
+    def _linearize_mapped_orders(self, mapped_orders: pd.DataFrame) -> pd.Series:
+        raise NotImplementedError
 
 
 class StrategyAlternatingLive(LiveTradingStrategy, StrategyAlternating):

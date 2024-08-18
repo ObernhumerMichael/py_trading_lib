@@ -9,7 +9,7 @@ from py_trading_lib.orders.strategy import BacktestingStrategy
 
 
 @pytest.fixture
-def example_analysis():
+def example_analysis() -> Analysis:
     analysis = Analysis()
 
     sma = analysis.add_ti(SMA(2))[0]
@@ -20,20 +20,7 @@ def example_analysis():
 
 
 @pytest.fixture
-def example_tohclv():
-    tohclv = {
-        "TIME": [1679144400000, 1679148000000, 1679151600000, 1679155200000],
-        "OPEN": [1, 1, 1, 1],
-        "HIGH": [1, 1, 1, 1],
-        "LOW": [1, 1, 1, 1],
-        "CLOSE": [1, 1, 10, 10],
-        "VOLUME": [1, 1, 1, 1],
-    }
-    return pd.DataFrame(tohclv)
-
-
-@pytest.fixture
-def example_analysis_data():
+def example_analysis_data() -> pd.DataFrame:
     analysis_data_raw = {
         "SMA_2>5": [False, False, True],
         "SMA_2<5": [True, False, False],
@@ -43,19 +30,19 @@ def example_analysis_data():
 
 
 @pytest.fixture
-def example_buy_order():
+def example_buy_order() -> Order:
     return OrderSpotMarket("BTC/USDT", 1000, "buy")
 
 
 @pytest.fixture
-def example_sell_order():
+def example_sell_order() -> Order:
     return OrderSpotMarket("USDT/BTC", 1000, "sell")
 
 
 @pytest.fixture
 def strategy_alternating_backtest(
     example_analysis: Analysis, example_buy_order: Order, example_sell_order: Order
-):
+) -> Strategy:
     buy_cond = example_analysis._conditions[0].get_name()
     sell_cond = example_analysis._conditions[1].get_name()
 
@@ -64,6 +51,30 @@ def strategy_alternating_backtest(
     strategy.add_order(sell_cond, example_sell_order)
 
     return strategy
+
+
+@pytest.fixture
+def example_mapped_orders(
+    example_buy_order: Order, example_sell_order: Order
+) -> pd.DataFrame:
+    mapped_orders_data = {
+        "SMA_2>5|BTC/USDT(buy)": [
+            None,
+            None,
+            example_buy_order,
+            example_buy_order,
+            example_buy_order,
+        ],
+        "SMA_2<5|USDT/BTC(sell)": [
+            None,
+            example_sell_order,
+            None,
+            example_sell_order,
+            example_sell_order,
+        ],
+    }
+    mapped_orders = pd.DataFrame(mapped_orders_data)
+    return mapped_orders
 
 
 class TestAllStrategy:
@@ -122,6 +133,26 @@ class TestBacktestingStrategy:
 
         pd.testing.assert_frame_equal(mapped_types, expected_types)
 
+    @pytest.mark.parametrize("strategy_fix", ["strategy_alternating_backtest"])
+    def test_map_orders_to_signals_result(
+        self,
+        strategy_fix: str,
+        example_analysis_data: pd.DataFrame,
+        example_buy_order: Order,
+        example_sell_order: Order,
+        request: pytest.FixtureRequest,
+    ):
+        strategy: BacktestingStrategy = request.getfixturevalue(strategy_fix)
+        expected_data = {
+            "SMA_2>5|BTC/USDT(buy)": [None, None, example_buy_order],
+            "SMA_2<5|USDT/BTC(sell)": [example_sell_order, None, None],
+        }
+        expected = pd.DataFrame(expected_data)
+
+        mapped_orders = strategy._map_orders_to_signals(example_analysis_data)
+
+        pd.testing.assert_frame_equal(mapped_orders, expected)
+
 
 class TestStrategyAlternatingSpecific:
     @pytest.mark.parametrize(
@@ -136,3 +167,10 @@ class TestStrategyAlternatingSpecific:
         with pytest.raises(ValueError):
             for _ in range(3):
                 strategy.add_order("TEST", example_buy_order)
+
+    def test_linearize_mapped_orders(
+        self,
+        strategy_alternating_backtest: Strategy,
+        example_mapped_orders: pd.DataFrame,
+    ):
+        pass
