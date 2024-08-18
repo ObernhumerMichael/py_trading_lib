@@ -4,6 +4,7 @@ import pandas as pd
 
 from py_trading_lib.utils.utils import *
 from py_trading_lib.utils.utils import select_only_needed_cols
+from py_trading_lib.utils.utils import type_check_is_series
 
 
 @pytest.mark.parametrize(
@@ -47,3 +48,16 @@ def test_select_only_needed_cols_fail():
 
     with pytest.raises(KeyError):
         select_only_needed_cols(["z"], df)
+
+
+def test_type_check_is_series_pass():
+    sr = pd.Series([1, 2, 3])
+    sr = type_check_is_series(sr)
+    assert isinstance(sr, pd.Series)
+
+
+def test_type_check_is_series_fail():
+    check = "a"
+
+    with pytest.raises(TypeError):
+        type_check_is_series(check)

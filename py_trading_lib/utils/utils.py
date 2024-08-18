@@ -24,3 +24,10 @@ def select_only_needed_cols(cols: List[str], df: pd.DataFrame) -> pd.DataFrame:
     selection = df[cols]
     selection = convert_to_df_from_sr_or_df(selection)
     return selection
+
+
+def type_check_is_series(check: Any) -> pd.Series:
+    if isinstance(check, pd.Series):
+        return check
+    else:
+        raise TypeError("The object to check is not a pandas Series.")

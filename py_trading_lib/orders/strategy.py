@@ -1,8 +1,12 @@
 from abc import ABC, abstractmethod
 from typing import Tuple, List
 
+import pandas as pd
+from pandas.core.generic import deepcopy
+
 from py_trading_lib.analysis.analysis import Analysis
 from py_trading_lib.orders.orders import Order
+import py_trading_lib.utils.utils as utils
 
 __all__ = ["Strategy", "StrategyAlternatingLive", "StrategyAlternatingBacktest"]
 
@@ -24,8 +28,21 @@ class BacktestingStrategy(Strategy):
     def execute_orders(self):
         raise NotImplementedError
 
-    def _map_orders_to_signals(self):
-        raise NotImplementedError
+    def _map_orders_to_signals(self, analysis_data: pd.DataFrame) -> pd.DataFrame:
+        single_maps: List[pd.Series] = []
+
+        for signal, order in self._orders:
+            signal_col = analysis_data[signal]
+            signal_col = utils.type_check_is_series(signal_col)
+
+            mapp = signal_col.apply(lambda x: deepcopy(order) if x else None)
+            mapp = utils.type_check_is_series(mapp)
+
+            mapp.name = f"{signal}|{order._symbol}({order._side})"
+            single_maps.append(mapp)
+
+        mapped_orders = pd.concat(single_maps, axis=1)
+        return mapped_orders
 
 
 class LiveTradingStrategy(Strategy):
