@@ -1,3 +1,5 @@
+from unicodedata import name
+from numpy import isin
 import pytest
 
 import pandas as pd
@@ -17,16 +19,6 @@ def example_analysis() -> Analysis:
     analysis.add_condition(CheckRelation(sma, "<", 5))
 
     return analysis
-
-
-@pytest.fixture
-def example_analysis_data() -> pd.DataFrame:
-    analysis_data_raw = {
-        "SMA_2>5": [False, False, True],
-        "SMA_2<5": [True, False, False],
-    }
-    example_analysis_data = pd.DataFrame(analysis_data_raw)
-    return example_analysis_data
 
 
 @pytest.fixture
@@ -53,6 +45,30 @@ def strategy_alternating_backtest(
     return strategy
 
 
+class TestAllStrategy:
+    @pytest.mark.parametrize(
+        "strategy",
+        [
+            StrategyAlternatingBacktest(Analysis()),
+            StrategyAlternatingLive(Analysis()),
+        ],
+    )
+    def test_add_order_pass(self, strategy: Strategy, example_buy_order: Order):
+        strategy.add_order("CheckAllTrue=['SMA_2>2']", example_buy_order)
+
+        assert len(strategy._orders) == 1
+
+
+@pytest.fixture
+def example_analysis_data() -> pd.DataFrame:
+    analysis_data_raw = {
+        "SMA_2>5": [False, False, True],
+        "SMA_2<5": [True, False, False],
+    }
+    example_analysis_data = pd.DataFrame(analysis_data_raw)
+    return example_analysis_data
+
+
 @pytest.fixture
 def example_mapped_orders(
     example_buy_order: Order, example_sell_order: Order
@@ -75,20 +91,6 @@ def example_mapped_orders(
     }
     mapped_orders = pd.DataFrame(mapped_orders_data)
     return mapped_orders
-
-
-class TestAllStrategy:
-    @pytest.mark.parametrize(
-        "strategy",
-        [
-            StrategyAlternatingBacktest(Analysis()),
-            StrategyAlternatingLive(Analysis()),
-        ],
-    )
-    def test_add_order_pass(self, strategy: Strategy, example_buy_order: Order):
-        strategy.add_order("CheckAllTrue=['SMA_2>2']", example_buy_order)
-
-        assert len(strategy._orders) == 1
 
 
 class TestBacktestingStrategy:
@@ -153,6 +155,35 @@ class TestBacktestingStrategy:
 
         pd.testing.assert_frame_equal(mapped_orders, expected)
 
+    def test_linearize_mapped_orders(
+        self,
+        strategy_alternating_backtest: BacktestingStrategy,
+        example_mapped_orders: pd.DataFrame,
+        example_buy_order: Order,
+        example_sell_order: Order,
+    ):
+        expected = pd.Series(
+            [
+                None,  # order 1
+                None,  # order 2
+                None,  # order 1
+                example_sell_order,  # order 2
+                example_buy_order,  # order 1
+                None,  # order 2
+                example_buy_order,  # order 1
+                example_sell_order,  # order 2
+                example_buy_order,  # order 1
+                example_sell_order,  # order 2
+            ],
+            name="linearized_orders",
+        )
+
+        linearized_orders = strategy_alternating_backtest._linearize_mapped_orders(
+            example_mapped_orders
+        )
+
+        pd.testing.assert_series_equal(linearized_orders, expected)
+
 
 class TestStrategyAlternatingSpecific:
     @pytest.mark.parametrize(
@@ -167,10 +198,3 @@ class TestStrategyAlternatingSpecific:
         with pytest.raises(ValueError):
             for _ in range(3):
                 strategy.add_order("TEST", example_buy_order)
-
-    def test_linearize_mapped_orders(
-        self,
-        strategy_alternating_backtest: Strategy,
-        example_mapped_orders: pd.DataFrame,
-    ):
-        pass

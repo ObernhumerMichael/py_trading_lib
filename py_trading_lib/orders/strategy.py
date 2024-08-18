@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Tuple, List
+from typing import Tuple, List, Union
 
 import pandas as pd
-from pandas.core.generic import deepcopy
 
 from py_trading_lib.analysis.analysis import Analysis
 from py_trading_lib.orders.orders import Order
@@ -56,9 +55,12 @@ class BacktestingStrategy(Strategy):
 
         return mapped_orders
 
-    @abstractmethod
     def _linearize_mapped_orders(self, mapped_orders: pd.DataFrame) -> pd.Series:
-        pass
+        linearized_raw: List[Union[None, Order]] = []
+        for _, row in mapped_orders.iterrows():
+            linearized_raw.extend(row.tolist())
+        linearized = pd.Series(linearized_raw, name="linearized_orders")
+        return linearized
 
 
 class LiveTradingStrategy(Strategy):
@@ -82,9 +84,6 @@ class StrategyAlternatingBacktest(BacktestingStrategy, StrategyAlternating):
     def add_order(self, signal: str, order: Order) -> None:
         self._check_max_orders_reached(self._orders)
         return super().add_order(signal, order)
-
-    def _linearize_mapped_orders(self, mapped_orders: pd.DataFrame) -> pd.Series:
-        raise NotImplementedError
 
 
 class StrategyAlternatingLive(LiveTradingStrategy, StrategyAlternating):
