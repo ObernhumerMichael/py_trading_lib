@@ -2,6 +2,8 @@ from typing import Literal
 
 
 class OrderResult:
+    # should also contain how the system has changed
+    # amount asset 1 & 2
     def __init__(
         self,
         symbol: str,

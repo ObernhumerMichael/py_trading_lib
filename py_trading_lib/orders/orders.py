@@ -13,15 +13,24 @@ class Order(ABC):
 
     @abstractmethod
     def place_on_exchange(self, exchange):
-        raise NotImplementedError
+        pass
 
     @abstractmethod
     def backtest(self):
-        raise NotImplementedError
+        pass
 
 
 class OrderSpot(Order):
-    pass
+    def __init__(
+        self, symbol: str, amount: float, side: Literal["buy", "sell"]
+    ) -> None:
+        super().__init__(symbol, amount, side)
+
+    def place_on_exchange(self, exchange):
+        raise NotImplementedError
+
+    def backtest(self):
+        raise NotImplementedError
 
 
 class OrderSpotMarket(OrderSpot):

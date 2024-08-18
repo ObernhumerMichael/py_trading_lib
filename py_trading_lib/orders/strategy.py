@@ -1,33 +1,54 @@
 from abc import ABC, abstractmethod
+from typing import Tuple, List
 
 from py_trading_lib.analysis.analysis import Analysis
 from py_trading_lib.orders.orders import Order
 
+__all__ = ["Strategy", "StrategyAlternatingLive", "StrategyAlternatingBacktest"]
+
 
 class Strategy(ABC):
-    """
-    should handle the overal strategy execution
-    backtest the orders
-    place on exchange
-    update the system status
-    """
-
-    @abstractmethod
     def __init__(self, analysis: Analysis) -> None:
         self._analysis = analysis
+        self._orders: List[Tuple[str, Order]] = []
+
+    def add_order(self, signal: str, order: Order) -> None:
+        self._orders.append((signal, order))
 
     @abstractmethod
-    def add_order(self, signal: str, order: Order):
+    def execute_orders(self):
+        pass
+
+
+class BacktestingStrategy(Strategy):
+    def execute_orders(self):
         raise NotImplementedError
 
-    @abstractmethod
-    def place_on_exchange(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    def backtest(self):
+    def _map_orders_to_signals(self):
         raise NotImplementedError
 
 
-class StrategyAlternating(Strategy):
-    pass
+class LiveTradingStrategy(Strategy):
+    def execute_orders(self):
+        raise NotImplementedError
+
+
+class StrategyAlternating:
+    def _check_max_orders_reached(self, orders: List[Tuple[str, Order]]):
+        max_orders = 2
+        if len(orders) >= max_orders:
+            raise ValueError(
+                "In an StrategyAlternating class not more than 2 orders can be added."
+            )
+
+
+class StrategyAlternatingBacktest(BacktestingStrategy, StrategyAlternating):
+    def add_order(self, signal: str, order: Order) -> None:
+        self._check_max_orders_reached(self._orders)
+        return super().add_order(signal, order)
+
+
+class StrategyAlternatingLive(LiveTradingStrategy, StrategyAlternating):
+    def add_order(self, signal: str, order: Order) -> None:
+        self._check_max_orders_reached(self._orders)
+        return super().add_order(signal, order)
