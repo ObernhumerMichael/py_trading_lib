@@ -3,7 +3,6 @@ from typing import Tuple, List, Union
 
 import pandas as pd
 
-from py_trading_lib.analysis.analysis import Analysis
 from py_trading_lib.orders.orders import Order
 import py_trading_lib.utils.utils as utils
 
@@ -11,27 +10,34 @@ __all__ = ["Strategy", "StrategyAlternatingLive", "StrategyAlternatingBacktest"]
 
 
 class Strategy(ABC):
-    def __init__(self, analysis: Analysis) -> None:
-        self._analysis = analysis
+    def __init__(self) -> None:
         self._orders: List[Tuple[str, Order]] = []
 
     def add_order(self, signal: str, order: Order) -> None:
         self._orders.append((signal, order))
 
-    @abstractmethod
-    def execute_orders(self):
-        pass
+    def _perform_sanity_checks(self):
+        raise NotImplementedError
 
     @abstractmethod
-    def _perform_sanity_checks(self):
+    def execute_orders(self, orders: pd.DataFrame):
         pass
 
 
 class BacktestingStrategy(Strategy):
-    def execute_orders(self):
-        raise NotImplementedError
+    # NOTE: calculate orders before linearization
+    def execute_orders(self, orders: pd.DataFrame):
 
-    def _perform_sanity_checks(self):
+        # itterate through each row:
+        # itterate through each element:
+        # - Don't forget nan checks
+        # check if able to place orderc with current (available) assets
+        # if not: drop order
+
+        # generate order (system change) from order
+        # if fill_time is now --> execute?
+        # else --> cache order and check later
+
         raise NotImplementedError
 
     def _map_orders_to_signals(self, analysis_data: pd.DataFrame) -> pd.DataFrame:
@@ -55,7 +61,7 @@ class BacktestingStrategy(Strategy):
 
         return mapped_orders
 
-    def _linearize_mapped_orders(self, mapped_orders: pd.DataFrame) -> pd.Series:
+    def _serialize_mapped_orders(self, mapped_orders: pd.DataFrame) -> pd.Series:
         linearized_raw: List[Union[None, Order]] = []
         for _, row in mapped_orders.iterrows():
             linearized_raw.extend(row.tolist())
@@ -64,10 +70,7 @@ class BacktestingStrategy(Strategy):
 
 
 class LiveTradingStrategy(Strategy):
-    def execute_orders(self):
-        raise NotImplementedError
-
-    def _perform_sanity_checks(self):
+    def execute_orders(self, orders: pd.DataFrame):
         raise NotImplementedError
 
 

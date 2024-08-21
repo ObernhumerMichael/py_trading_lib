@@ -1,5 +1,3 @@
-from unicodedata import name
-from numpy import isin
 import pytest
 
 import pandas as pd
@@ -38,7 +36,7 @@ def strategy_alternating_backtest(
     buy_cond = example_analysis._conditions[0].get_name()
     sell_cond = example_analysis._conditions[1].get_name()
 
-    strategy = StrategyAlternatingBacktest(example_analysis)
+    strategy = StrategyAlternatingBacktest()
     strategy.add_order(buy_cond, example_buy_order)
     strategy.add_order(sell_cond, example_sell_order)
 
@@ -49,8 +47,8 @@ class TestAllStrategy:
     @pytest.mark.parametrize(
         "strategy",
         [
-            StrategyAlternatingBacktest(Analysis()),
-            StrategyAlternatingLive(Analysis()),
+            StrategyAlternatingBacktest(),
+            StrategyAlternatingLive(),
         ],
     )
     def test_add_order_pass(self, strategy: Strategy, example_buy_order: Order):
@@ -155,7 +153,7 @@ class TestBacktestingStrategy:
 
         pd.testing.assert_frame_equal(mapped_orders, expected)
 
-    def test_linearize_mapped_orders(
+    def test_serialize_mapped_orders(
         self,
         strategy_alternating_backtest: BacktestingStrategy,
         example_mapped_orders: pd.DataFrame,
@@ -178,7 +176,7 @@ class TestBacktestingStrategy:
             name="linearized_orders",
         )
 
-        linearized_orders = strategy_alternating_backtest._linearize_mapped_orders(
+        linearized_orders = strategy_alternating_backtest._serialize_mapped_orders(
             example_mapped_orders
         )
 
@@ -189,8 +187,8 @@ class TestStrategyAlternatingSpecific:
     @pytest.mark.parametrize(
         "strategy",
         [
-            StrategyAlternatingBacktest(Analysis()),
-            StrategyAlternatingLive(Analysis()),
+            StrategyAlternatingBacktest(),
+            StrategyAlternatingLive(),
         ],
     )
     def test_add_order_too_many_signals(self, strategy: Strategy, example_buy_order):
