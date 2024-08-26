@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Literal
 
+from py_trading_lib.orders.coin import ModifyCoin
+
 
 class Order(ABC):
     @abstractmethod
@@ -16,7 +18,7 @@ class Order(ABC):
         pass
 
     @abstractmethod
-    def backtest(self):
+    def backtest(self) -> ModifyCoin:
         pass
 
 
