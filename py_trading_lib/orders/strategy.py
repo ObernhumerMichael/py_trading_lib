@@ -31,12 +31,9 @@ class BacktestingStrategy(Strategy):
         # itterate through each row:
         # itterate through each element:
         # - Don't forget nan checks
-        # check if able to place orderc with current (available) assets
+        # is_placeable
+        # - - backtest
         # if not: drop order
-
-        # generate order (system change) from order
-        # if fill_time is now --> execute?
-        # else --> cache order and check later
 
         raise NotImplementedError
 

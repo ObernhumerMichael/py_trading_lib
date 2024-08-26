@@ -21,12 +21,12 @@ def example_analysis() -> Analysis:
 
 @pytest.fixture
 def example_buy_order() -> Order:
-    return OrderSpotMarket("BTC/USDT", 1000, "buy")
+    return OrderSpotMarketBuy("BTC/USDT", 1000)
 
 
 @pytest.fixture
 def example_sell_order() -> Order:
-    return OrderSpotMarket("USDT/BTC", 1000, "sell")
+    return OrderSpotMarketSell("USDT/BTC", 1000)
 
 
 @pytest.fixture
