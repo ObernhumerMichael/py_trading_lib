@@ -3,10 +3,15 @@ from typing import Tuple, List, Union
 
 import pandas as pd
 
+from py_trading_lib.orders.coin import Portfolio
 from py_trading_lib.orders.orders import Order
 import py_trading_lib.utils.utils as utils
 
-__all__ = ["Strategy", "StrategyAlternatingLive", "StrategyAlternatingBacktest"]
+__all__ = [
+    "Strategy",
+    "StrategyAlternatingLive",
+    "StrategyAlternatingBacktest",
+]
 
 
 class Strategy(ABC):
@@ -27,7 +32,7 @@ class Strategy(ABC):
 class BacktestingStrategy(Strategy):
     # NOTE: calculate orders before linearization
     def execute_orders(self, orders: pd.DataFrame):
-
+        # portfolio: Portfolio
         # itterate through each row:
         # itterate through each element:
         # - Don't forget nan checks

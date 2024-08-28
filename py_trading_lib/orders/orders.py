@@ -53,9 +53,6 @@ class OrderSpotMarketBuy(OrderSpotBuy):
         raise NotImplementedError
 
     def backtest(self, ohclv: List[float]) -> Tuple[ModifyCoin, ModifyCoin]:
-        close = ohclv[2]
-        quote_amount = self._amount / close
-
         raise NotImplementedError
 
 

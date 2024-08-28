@@ -3,9 +3,9 @@ import pytest
 import pandas as pd
 
 from py_trading_lib.analysis import *
-from py_trading_lib.orders.strategy import *
+from py_trading_lib.system.strategy import *
+from py_trading_lib.system.strategy import BacktestingStrategy
 from py_trading_lib.orders.orders import *
-from py_trading_lib.orders.strategy import BacktestingStrategy
 
 
 @pytest.fixture
